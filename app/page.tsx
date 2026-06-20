@@ -102,6 +102,7 @@ export default async function DashboardPage() {
           )}
           <Link
             href="/goals/new"
+            data-tour="new-goal"
             className="rounded-xl px-5 py-2 text-sm font-display font-semibold tracking-widest transition-all"
             style={{
               background: 'linear-gradient(135deg, #c8a84b 0%, #9a7d34 100%)',
@@ -115,14 +116,16 @@ export default async function DashboardPage() {
       </div>
 
       {/* Ship progression tree */}
-      <ShipTree
-        currentVariant={currentStage?.variant ?? null}
-        goalVariant={goalVariant}
-        progress={progress}
-        missingCount={missingCount}
-        totalCount={totalCount}
-        goalId={activeGoal?.id ?? null}
-      />
+      <div data-tour="ship-tree">
+        <ShipTree
+          currentVariant={currentStage?.variant ?? null}
+          goalVariant={goalVariant}
+          progress={progress}
+          missingCount={missingCount}
+          totalCount={totalCount}
+          goalId={activeGoal?.id ?? null}
+        />
+      </div>
     </div>
   )
 }

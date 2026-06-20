@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Cinzel, Spectral, Niramit } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/nav'
+import Tutorial from '@/app/components/tutorial'
 
 const cinzel = Cinzel({
   subsets:  ['latin'],
@@ -43,6 +44,7 @@ export default function RootLayout({
         <footer className="mt-8 border-t border-gray-800/60 py-4 text-center text-xs text-gray-700 tracking-widest uppercase">
           Carrack Tracker&ensp;·&ensp;Alpha 0.4
         </footer>
+        <Tutorial />
       </body>
     </html>
   )

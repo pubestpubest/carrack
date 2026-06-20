@@ -8,10 +8,10 @@ import { createClient } from '@/lib/supabase/client'
 const OWNER_EMAIL = 'pubest12@gmail.com'
 
 const links = [
-  { href: '/',          label: 'Dashboard' },
-  { href: '/goals',     label: 'Goals'     },
-  { href: '/inventory', label: 'Inventory' },
-  { href: '/catalogue', label: 'Catalogue' },
+  { href: '/',          label: 'Dashboard', tour: ''              },
+  { href: '/goals',     label: 'Goals',     tour: 'nav-goals'     },
+  { href: '/inventory', label: 'Inventory', tour: 'nav-inventory' },
+  { href: '/catalogue', label: 'Catalogue', tour: 'nav-catalogue' },
 ]
 
 export default function Nav() {
@@ -71,12 +71,13 @@ export default function Nav() {
 
         {/* Nav links */}
         <div className="flex flex-1 gap-0.5">
-          {links.map(({ href, label }) => {
+          {links.map(({ href, label, tour }) => {
             const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
             return (
               <Link
                 key={href}
                 href={href}
+                {...(tour ? { 'data-tour': tour } : {})}
                 className={[
                   'font-display rounded-md px-3 py-1.5 text-xs font-semibold tracking-widest transition-all duration-200',
                   isActive

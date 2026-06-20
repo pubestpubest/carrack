@@ -18,11 +18,22 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const allowed = ['name_th', 'grade', 'image_url', 'crow_coin_price', 'category', 'tier'] as const
-  const patch: Record<string, unknown> = {}
-  for (const key of allowed) {
-    if (key in body) patch[key] = body[key]
-  }
+
+  const patch: {
+    name_th?:         string | null
+    grade?:           string
+    image_url?:       string | null
+    crow_coin_price?: number | null
+    category?:        string
+    tier?:            number
+  } = {}
+
+  if ('name_th'         in body) patch.name_th         = body.name_th         ?? null
+  if ('grade'           in body) patch.grade           = body.grade
+  if ('image_url'       in body) patch.image_url       = body.image_url       ?? null
+  if ('crow_coin_price' in body) patch.crow_coin_price = body.crow_coin_price ?? null
+  if ('category'        in body) patch.category        = body.category
+  if ('tier'            in body) patch.tier            = body.tier
 
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
