@@ -40,7 +40,6 @@ function NewGoalContent() {
   const [step,          setStep]          = useState<1 | 2>(1)
   const [target,        setTarget]        = useState<CarrackItem | null>(null)
   const [currentStage,  setCurrentStage]  = useState<ShipStage | null>(null)
-  const [daily,         setDaily]         = useState(false)
 
   // Equipment goal state
   const [equipItems,    setEquipItems]    = useState<EquipItem[]>([])
@@ -110,7 +109,7 @@ function NewGoalContent() {
           item_id:          target.item_id,
           target_qty:       1,
           current_stage_id: currentStage.stage_id,
-          use_daily_quests: daily,
+          use_daily_quests: false,
         })
         .select('id')
         .single()
@@ -230,7 +229,7 @@ function NewGoalContent() {
 
           {/* Step 2: Pick current ship */}
           {step === 2 && target && (
-            <div>
+            <div data-tour="ship-current-step">
               <h1 className="mb-1 text-xl font-bold">What ship do you currently have?</h1>
               <p className="mb-6 text-sm text-gray-400">
                 Goal: <span className="grade-blue font-medium">{target.name}</span>
@@ -262,15 +261,6 @@ function NewGoalContent() {
                   </button>
                 ))}
               </div>
-
-              <label className="mb-6 flex cursor-pointer items-center gap-2 text-sm text-gray-400">
-                <input
-                  type="checkbox"
-                  checked={daily}
-                  onChange={e => setDaily(e.target.checked)}
-                />
-                Count Ravina daily quests (~50% material reduction)
-              </label>
 
               {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
 

@@ -53,7 +53,7 @@ const STEPS: Step[] = [
   {
     title:     'เรือปัจจุบันของคุณ',
     body:      'เลือกเรือที่คุณมีอยู่ตอนนี้ เพื่อให้ระบบคำนวณวัตถุดิบที่ยังขาด จากนั้นกด Start Tracking',
-    selector:  '[data-tour="start-tracking"]',
+    selector:  '[data-tour="ship-current-step"]',
     advanceOn: '[data-tour="start-tracking"]',
     hint:      'เลือกเรือที่มี แล้วกด Start Tracking',
   },
@@ -131,13 +131,15 @@ function Tooltip({
     }
     const cx     = rect.left + rect.width / 2
     const left   = Math.max(12, Math.min(cx - W / 2, vw - W - 12))
-    const CARD_H = 200
+    const CARD_H = 220
     const belowY = rect.bottom + 14
     const aboveY = rect.top - CARD_H - 14
 
-    if (belowY + CARD_H < vh - 16)  return { position: 'fixed', top: belowY, left, width: W }
-    if (aboveY > 16)                 return { position: 'fixed', top: aboveY, left, width: W }
-    return { position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', width: W }
+    if (belowY + CARD_H < vh - 16) return { position: 'fixed', top: belowY, left, width: W }
+    if (aboveY > 16)                return { position: 'fixed', top: aboveY, left, width: W }
+    // Fallback: avoid overlapping the element by placing on the roomier side
+    if (rect.top > vh / 2) return { position: 'fixed', top: Math.max(16, aboveY), left, width: W }
+    return { position: 'fixed', top: Math.min(belowY, vh - CARD_H - 16), left, width: W }
   })()
 
   return (
