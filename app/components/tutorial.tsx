@@ -19,7 +19,7 @@ const STEPS: Step[] = [
     body:  'ติดตามความคืบหน้าของคุณสู่เรือ Epheria Carrack — เรือระดับสูงสุดของสาย Life Skill ใน BDO ทัวร์นี้จะพาคุณรู้จักฟีเจอร์หลักทั้งหมด',
   },
   {
-    title:    'ต้นไม้การอัพเกรดเรือ',
+    title:    'แผนผังการอัพเกรดเรือ',
     body:     'แสดงเส้นทางการอัพเกรดทั้งหมด ตั้งแต่เรือใบไปจนถึง Carrack แต่ละแบบ เรือปัจจุบันของคุณจะถูกไฮไลต์ และเรือเป้าหมายจะสว่างขึ้น',
     selector: '[data-tour="ship-tree"]',
   },
@@ -224,8 +224,8 @@ export default function Tutorial() {
 
       {active && createPortal(
         <>
-          {/* Backdrop */}
-          <div onClick={finish} className="fixed inset-0 bg-black/65 backdrop-blur-[2px]"
+          {/* Backdrop — pointer-events none so the spotlighted elements remain clickable */}
+          <div className="fixed inset-0 bg-black/65 pointer-events-none"
                style={{ zIndex: 9990 }} />
 
           {/* Static spotlight ring */}
