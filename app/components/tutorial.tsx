@@ -233,21 +233,41 @@ export default function Tutorial() {
 
   const step = STEPS[index]
 
-  // Spotlight target element — retry after navigation
+  // Continuously track spotlight target with rAF — updates on scroll, resize,
+  // navigation, and any layout shift; only triggers setState when rect changes.
   useEffect(() => {
     if (!active || !step.selector) { setRect(null); return }
-    const tryFind = () => {
+
+    let rafId: number
+    let prev: DOMRect | null = null
+    let scrolledOnce = false
+
+    const track = () => {
       const el = document.querySelector<HTMLElement>(step.selector!)
       if (el) {
-        setRect(el.getBoundingClientRect())
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        const r = el.getBoundingClientRect()
+        if (
+          !prev ||
+          Math.abs(r.top    - prev.top)    > 0.5 ||
+          Math.abs(r.left   - prev.left)   > 0.5 ||
+          Math.abs(r.width  - prev.width)  > 0.5 ||
+          Math.abs(r.height - prev.height) > 0.5
+        ) {
+          prev = r
+          setRect(r)
+        }
+        if (!scrolledOnce) {
+          scrolledOnce = true
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
       } else {
-        setRect(null)
+        if (prev !== null) { prev = null; setRect(null) }
       }
+      rafId = requestAnimationFrame(track)
     }
-    tryFind()
-    const t = setTimeout(tryFind, 500)
-    return () => clearTimeout(t)
+
+    rafId = requestAnimationFrame(track)
+    return () => cancelAnimationFrame(rafId)
   }, [active, index, step.selector])
 
   // Click-to-advance via event delegation — works for any matching element
