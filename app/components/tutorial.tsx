@@ -3,50 +3,102 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
-const STORAGE_KEY = 'carrack-tutorial-done-v1'
+const STORAGE_KEY = 'carrack-tutorial-done-v2'
 
 type Step = {
   title:      string
   body:       string
   selector?:  string   // element to spotlight
-  advanceOn?: string   // user must click this selector to advance (interactive)
-  hint?:      string   // shown below body when advanceOn is set
+  advanceOn?: string   // CSS selector — clicking ANY match advances (event delegation)
+  hint?:      string   // amber hint shown when advanceOn is set
 }
 
 const STEPS: Step[] = [
+  // ── 1. Welcome ───────────────────────────────────────────────────────────────
   {
     title: 'ยินดีต้อนรับสู่ Carrack Tracker ⚓',
-    body:  'ติดตามความคืบหน้าของคุณสู่เรือ Epheria Carrack — เรือระดับสูงสุดของสาย Life Skill ใน BDO ทัวร์นี้จะพาคุณรู้จักฟีเจอร์หลักทั้งหมด',
+    body:  'ทัวร์นี้จะพาคุณสร้างเป้าหมายจริงๆ อัพเดทคลัง และดูข้อมูลไอเทม — ทำทีละขั้นตอนไปด้วยกัน',
   },
+  // ── 2. Ship tree ─────────────────────────────────────────────────────────────
   {
     title:    'แผนผังการอัพเกรดเรือ',
-    body:     'แสดงเส้นทางการอัพเกรดทั้งหมด ตั้งแต่เรือใบไปจนถึง Carrack แต่ละแบบ เรือปัจจุบันของคุณจะถูกไฮไลต์ และเรือเป้าหมายจะสว่างขึ้น',
+    body:     'แสดงเส้นทางจากเรือใบสู่ Carrack ทุกแบบ สีทองคือเรือเป้าหมายที่คุณตั้งไว้',
     selector: '[data-tour="ship-tree"]',
   },
+  // ── 3. Click + New Goal ───────────────────────────────────────────────────────
   {
-    title:     'เป้าหมาย — วัตถุดิบที่ต้องการ',
-    body:      'หน้า Goals แสดงวัตถุดิบทั้งหมดที่ต้องใช้ พร้อม progress bar และราคา Crow Coin สำหรับซื้อแทนการฟาร์ม',
-    selector:  '[data-tour="nav-goals"]',
-    advanceOn: '[data-tour="nav-goals"]',
-    hint:      'กดเมนู Goals ด้านบนเพื่อไปต่อ',
+    title:     'สร้างเป้าหมายใหม่',
+    body:      'กดปุ่ม "+ New Goal" เพื่อเริ่มติดตามการสร้าง Carrack',
+    selector:  '[data-tour="new-goal"]',
+    advanceOn: '[data-tour="new-goal"]',
+    hint:      'กดปุ่ม + New Goal เพื่อไปต่อ',
   },
+  // ── 4. Click Ship Goal button ────────────────────────────────────────────────
   {
-    title:     'คลังของฉัน — อัพเดทสิ่งที่มี',
-    body:      'ใส่จำนวนวัตถุดิบที่คุณมีอยู่แล้ว Progress bar บนหน้า Goals จะอัพเดทอัตโนมัติทันที',
+    title:     'เลือกประเภทเป้าหมาย',
+    body:      'เลือก "Ship Goal" เพื่อติดตามเส้นทางการอัพเกรดเรือทั้งหมดไปสู่ Carrack',
+    selector:  '[data-tour="goal-type-ship"]',
+    advanceOn: '[data-tour="goal-type-ship"]',
+    hint:      'กดปุ่ม Ship Goal',
+  },
+  // ── 5. Pick a Carrack ────────────────────────────────────────────────────────
+  {
+    title:     'เลือก Carrack เป้าหมาย',
+    body:      'มี 4 แบบ — Advance (บรรทุก), Balance (รอบด้าน), Valor (รบ), Volante (ความเร็ว) เลือกตามสไตล์ที่ชอบ',
+    selector:  '[data-tour="carrack-list"]',
+    advanceOn: '[data-tour="carrack-option"]',
+    hint:      'คลิก Carrack ที่ต้องการสร้าง',
+  },
+  // ── 6. Start Tracking ────────────────────────────────────────────────────────
+  {
+    title:     'เรือปัจจุบันของคุณ',
+    body:      'เลือกเรือที่คุณมีอยู่ตอนนี้ เพื่อให้ระบบคำนวณวัตถุดิบที่ยังขาด จากนั้นกด Start Tracking',
+    selector:  '[data-tour="start-tracking"]',
+    advanceOn: '[data-tour="start-tracking"]',
+    hint:      'เลือกเรือที่มี แล้วกด Start Tracking',
+  },
+  // ── 7. Browse materials ──────────────────────────────────────────────────────
+  {
+    title:    'รายการวัตถุดิบที่ต้องการ',
+    body:     'แต่ละแถวแสดง จำนวนที่มี / จำนวนที่ต้องการ และราคา Crow Coin ถ้าอยากซื้อแทนฟาร์ม เลื่อนดูรายการทั้งหมดได้เลย',
+    selector: '[data-tour="materials-section"]',
+    hint:     'เลื่อนดูรายการวัตถุดิบด้านล่าง',
+  },
+  // ── 8. Go to Inventory ───────────────────────────────────────────────────────
+  {
+    title:     'อัพเดทคลังของคุณ',
+    body:      'ไปหน้า Inventory เพื่อกรอกจำนวนวัตถุดิบที่มีอยู่แล้ว Progress bar จะอัพเดทอัตโนมัติ',
     selector:  '[data-tour="nav-inventory"]',
     advanceOn: '[data-tour="nav-inventory"]',
-    hint:      'กดเมนู Inventory ด้านบนเพื่อไปต่อ',
+    hint:      'กดเมนู Inventory ด้านบน',
   },
+  // ── 9. Try updating inventory ────────────────────────────────────────────────
   {
-    title:     'แคตตาล็อก — ข้อมูลไอเทม',
-    body:      'ค้นหาสูตรผลิต เกรด ราคา Crow Coin และเส้นทาง Enhancement ของไอเทมทุกชิ้น เหมาะสำหรับวางแผนว่าจะฟาร์มหรือซื้ออะไรก่อน',
+    title:    'กรอกจำนวนที่มี',
+    body:     'กรอกตัวเลขในช่องของไอเทมที่มี ระบบบันทึกอัตโนมัติและ progress bar บนหน้า Goals จะอัพเดททันที ลองกรอกดูสักรายการ',
+    selector: '[data-tour="inventory-table"]',
+    hint:     'ลองกรอกจำนวนในช่อง',
+  },
+  // ── 10. Go to Catalogue ──────────────────────────────────────────────────────
+  {
+    title:     'ดูข้อมูลไอเทม',
+    body:      'Catalogue รวบรวมทุกไอเทม — สูตรผลิต เกรด ราคา Crow Coin และวิธีหา เหมาะสำหรับวางแผนว่าจะฟาร์มหรือซื้ออะไรก่อน',
     selector:  '[data-tour="nav-catalogue"]',
     advanceOn: '[data-tour="nav-catalogue"]',
-    hint:      'กดเมนู Catalogue ด้านบนเพื่อไปต่อ',
+    hint:      'กดเมนู Catalogue ด้านบน',
   },
+  // ── 11. Click a Carrack item ─────────────────────────────────────────────────
   {
-    title: 'เยี่ยมมาก! คุณพร้อมแล้ว 🎉',
-    body:  'ตอนนี้คุณรู้จัก Carrack Tracker ครบทุกส่วนแล้ว กดปุ่ม ? ที่มุมล่างขวาเมื่อไหรก็ได้เพื่อดูทัวร์อีกครั้ง ขอให้โชคดีในการเดินทาง!',
+    title:     'ดูรายละเอียดไอเทม',
+    body:      'คลิกไอเทม Carrack ชิ้นใดก็ได้ เพื่อดูสูตรผลิต วิธีหา และเส้นทาง Enhancement',
+    selector:  '[data-tour="catalogue-equipment"]',
+    advanceOn: '[data-tour="catalogue-item"]',
+    hint:      'คลิกไอเทม Carrack ที่สนใจ',
+  },
+  // ── 12. Done ─────────────────────────────────────────────────────────────────
+  {
+    title: 'เยี่ยมมาก! พร้อมออกเดินทางแล้ว 🎉',
+    body:  'คุณรู้จัก Carrack Tracker ครบทุกส่วนแล้ว กดปุ่ม ? ที่มุมล่างขวาเมื่อไหรก็ได้เพื่อเริ่มทัวร์ใหม่',
   },
 ]
 
@@ -65,8 +117,8 @@ function Tooltip({
   onDone: () => void
   onSkip: () => void
 }) {
-  const isFirst      = index === 0
-  const isLast       = index === total - 1
+  const isFirst       = index === 0
+  const isLast        = index === total - 1
   const isInteractive = !!step.advanceOn
 
   const style: React.CSSProperties = (() => {
@@ -77,7 +129,6 @@ function Tooltip({
     if (!rect) {
       return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: W }
     }
-
     const cx     = rect.left + rect.width / 2
     const left   = Math.max(12, Math.min(cx - W / 2, vw - W - 12))
     const CARD_H = 200
@@ -106,11 +157,17 @@ function Tooltip({
       <h3 className="mb-1.5 text-sm font-bold text-gray-100 font-thai">{step.title}</h3>
       <p  className="text-xs leading-relaxed text-gray-400 font-thai">{step.body}</p>
 
-      {/* Interactive hint — shown instead of Next button */}
-      {isInteractive && step.hint && (
-        <div className="mt-3 flex items-center gap-2 rounded-xl border border-amber-800/40 bg-amber-950/30 px-3 py-2">
-          <span className="text-base leading-none">☝️</span>
-          <span className="text-xs font-semibold text-amber-400 font-thai">{step.hint}</span>
+      {/* Interactive hint */}
+      {step.hint && (
+        <div className={`mt-3 flex items-center gap-2 rounded-xl border px-3 py-2 ${
+          isInteractive
+            ? 'border-amber-800/40 bg-amber-950/30'
+            : 'border-gray-800/60 bg-gray-900/40'
+        }`}>
+          <span className="text-base leading-none">{isInteractive ? '☝️' : '💡'}</span>
+          <span className={`text-xs font-semibold font-thai ${isInteractive ? 'text-amber-400' : 'text-gray-400'}`}>
+            {step.hint}
+          </span>
         </div>
       )}
 
@@ -126,10 +183,9 @@ function Tooltip({
             ← ย้อนกลับ
           </button>
         )}
-
         <div className="flex-1" />
 
-        {/* Skip step (for interactive steps) */}
+        {/* Skip step for interactive steps */}
         {isInteractive && !isLast && (
           <button onClick={onNext}
             className="rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:text-gray-400 transition-colors font-thai">
@@ -137,7 +193,7 @@ function Tooltip({
           </button>
         )}
 
-        {/* Next / Done for non-interactive steps */}
+        {/* Next / Done for non-interactive (and last) steps */}
         {!isInteractive && (
           isLast ? (
             <button onClick={onDone}
@@ -177,26 +233,34 @@ export default function Tutorial() {
 
   const step = STEPS[index]
 
-  // Spotlight target element
+  // Spotlight target element — retry after navigation
   useEffect(() => {
     if (!active || !step.selector) { setRect(null); return }
-    const el = document.querySelector<HTMLElement>(step.selector)
-    if (el) {
-      setRect(el.getBoundingClientRect())
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    } else {
-      setRect(null)
+    const tryFind = () => {
+      const el = document.querySelector<HTMLElement>(step.selector!)
+      if (el) {
+        setRect(el.getBoundingClientRect())
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      } else {
+        setRect(null)
+      }
     }
+    tryFind()
+    const t = setTimeout(tryFind, 500)
+    return () => clearTimeout(t)
   }, [active, index, step.selector])
 
-  // Click listener for interactive steps
+  // Click-to-advance via event delegation — works for any matching element
   useEffect(() => {
     if (!active || !step.advanceOn) return
-    const el = document.querySelector<HTMLElement>(step.advanceOn)
-    if (!el) return
-    const handler = () => setIndex(i => Math.min(i + 1, STEPS.length - 1))
-    el.addEventListener('click', handler)
-    return () => el.removeEventListener('click', handler)
+    const selector = step.advanceOn
+    const handler = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest(selector)) {
+        setIndex(i => Math.min(i + 1, STEPS.length - 1))
+      }
+    }
+    document.addEventListener('click', handler, true)
+    return () => document.removeEventListener('click', handler, true)
   }, [active, index, step.advanceOn])
 
   const finish = useCallback(() => {
@@ -224,13 +288,13 @@ export default function Tutorial() {
 
       {active && createPortal(
         <>
-          {/* Backdrop — only for steps with no spotlight target (welcome / done) */}
+          {/* Backdrop — only for steps without a spotlight target */}
           {!rect && (
             <div className="fixed inset-0 bg-black/60 pointer-events-none"
                  style={{ zIndex: 9990 }} />
           )}
 
-          {/* Static spotlight ring — box-shadow creates the dark surround; interior stays bright */}
+          {/* Spotlight ring — box-shadow creates the dark surround; interior stays bright */}
           {rect && (
             <div className="pointer-events-none fixed"
               style={{
@@ -245,17 +309,17 @@ export default function Tutorial() {
             />
           )}
 
-          {/* Pulsing ring — extra layer when user must click */}
+          {/* Pulsing ring when user must click */}
           {rect && step.advanceOn && (
             <div className="pointer-events-none fixed animate-ping"
               style={{
-                zIndex:        9996,
-                top:           rect.top    - 6,
-                left:          rect.left   - 6,
-                width:         rect.width  + 12,
-                height:        rect.height + 12,
-                border:        '2px solid rgba(234,179,8,0.5)',
-                borderRadius:  10,
+                zIndex:           9996,
+                top:              rect.top    - 6,
+                left:             rect.left   - 6,
+                width:            rect.width  + 12,
+                height:           rect.height + 12,
+                border:           '2px solid rgba(234,179,8,0.5)',
+                borderRadius:     10,
                 animationDuration: '1.2s',
               }}
             />

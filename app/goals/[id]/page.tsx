@@ -159,7 +159,9 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
           </p>
         </div>
       ) : (
-        <MaterialsList rows={rows} />
+        <div data-tour="materials-section">
+          <MaterialsList rows={rows} />
+        </div>
       )}
     </div>
   )

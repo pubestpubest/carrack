@@ -159,6 +159,7 @@ function NewGoalContent() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <button
               onClick={() => setGoalType('ship')}
+              data-tour="goal-type-ship"
               className="rounded-2xl border border-gray-700 bg-gray-900 p-6 text-left transition-colors hover:border-blue-500 hover:bg-gray-800"
             >
               <p className="mb-2 text-2xl">⚓</p>
@@ -205,7 +206,7 @@ function NewGoalContent() {
               <p className="mb-6 text-sm text-gray-400">
                 Choose your target. The tracker will show everything needed to get there.
               </p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-tour="carrack-list">
                 {carracks.map(item => {
                   const v    = variantOf(item)
                   const desc = CARRACK_DESCRIPTIONS[v]
@@ -213,6 +214,7 @@ function NewGoalContent() {
                     <button
                       key={item.item_id}
                       onClick={() => handleSelectTarget(item)}
+                      data-tour="carrack-option"
                       className="rounded-lg border border-gray-700 bg-gray-900 p-5 text-left transition-colors hover:border-blue-500 hover:bg-gray-800"
                     >
                       <p className="mb-1 font-semibold grade-blue">{item.name}</p>
@@ -276,6 +278,7 @@ function NewGoalContent() {
                 <button
                   onClick={handleCreateShipGoal}
                   disabled={!currentStage || isPending}
+                  data-tour="start-tracking"
                   className="rounded bg-blue-600 px-5 py-2 text-sm font-semibold hover:bg-blue-500 disabled:opacity-40"
                 >
                   {isPending ? 'Creating…' : 'Start Tracking'}

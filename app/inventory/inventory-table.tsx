@@ -119,7 +119,7 @@ export default function InventoryBento({ items }: { items: ItemRow[] }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="inventory-table">
       {/* Stats row */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Item Types" value={totalTracked} sub="in catalogue" />

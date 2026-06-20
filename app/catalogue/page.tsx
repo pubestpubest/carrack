@@ -46,7 +46,7 @@ export default async function CataloguePage({
       </form>
 
       {Object.entries(grouped).map(([cat, catItems]) => (
-        <section key={cat} className="mb-10">
+        <section key={cat} className="mb-10" {...(cat === 'equipment' ? { 'data-tour': 'catalogue-equipment' } : {})}>
           <h2 className="mb-4 text-base font-semibold uppercase tracking-wider text-gray-500 capitalize">
             {cat} ({catItems.length})
           </h2>
@@ -57,6 +57,7 @@ export default async function CataloguePage({
                 <Link
                   key={item.item_id}
                   href={`/catalogue/${item.item_id}`}
+                  {...(cat === 'equipment' ? { 'data-tour': 'catalogue-item' } : {})}
                   className="flex items-center gap-3 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 hover:border-gray-500"
                 >
                   {/* Image / placeholder */}
