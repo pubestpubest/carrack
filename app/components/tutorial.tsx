@@ -70,15 +70,30 @@ function Tooltip({
   const isLast  = index === total - 1
 
   const style: React.CSSProperties = (() => {
+    const W  = 340
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 800
+
     if (!rect) {
-      return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 360 }
+      return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: W }
     }
-    const W    = 336
-    const left = Math.max(12, Math.min(rect.left, (typeof window !== 'undefined' ? window.innerWidth : 1200) - W - 12))
-    if (step.side === 'top') {
-      return { position: 'fixed', bottom: `calc(100vh - ${rect.top - 16}px)`, left, width: W }
+
+    // Horizontal: centre over target, clamped to viewport
+    const cx     = rect.left + rect.width / 2
+    const left   = Math.max(12, Math.min(cx - W / 2, (typeof window !== 'undefined' ? window.innerWidth : 1200) - W - 12))
+
+    // Vertical: below the element if space allows, otherwise above; fall back to bottom-of-screen
+    const CARD_H = 180 // approximate tooltip height
+    const belowY = rect.bottom + 14
+    const aboveY = rect.top - CARD_H - 14
+
+    if (belowY + CARD_H < vh - 16) {
+      return { position: 'fixed', top: belowY, left, width: W }
     }
-    return { position: 'fixed', top: rect.bottom + 14, left, width: W }
+    if (aboveY > 16) {
+      return { position: 'fixed', top: aboveY, left, width: W }
+    }
+    // element fills the viewport — stick the card at the bottom-centre
+    return { position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', width: W }
   })()
 
   return (
