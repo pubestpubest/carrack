@@ -171,7 +171,7 @@ export default function InventoryBento({ items }: { items: ItemRow[] }) {
                     >
                       {/* Image / placeholder */}
                       <div
-                        className={`shrink-0 h-14 w-14 rounded-lg overflow-hidden border grade-frame-${item.grade}`}
+                        className={`shrink-0 h-20 w-20 rounded-lg overflow-hidden border grade-frame-${item.grade}`}
                         style={{ backgroundColor: GRADE_PLACEHOLDER[item.grade] ?? '#1f2937' }}
                       >
                         {item.image_url && (
@@ -187,7 +187,7 @@ export default function InventoryBento({ items }: { items: ItemRow[] }) {
 
                       {/* Name */}
                       <div className="flex-1">
-                        <p className={`text-base font-medium grade-${item.grade} leading-snug`}>{item.name_th ?? item.name}</p>
+                        <p className={`text-base font-medium font-thai grade-${item.grade} leading-snug`}>{item.name_th ?? item.name}</p>
                         <p className="text-sm text-gray-600 leading-snug">{item.name}</p>
                         {item.crow_coin_price != null && (
                           <p className="text-xs text-amber-500/70 leading-snug">🪙 {item.crow_coin_price.toLocaleString()}</p>

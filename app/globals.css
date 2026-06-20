@@ -81,6 +81,9 @@
   .bg-ink-surface { background-color: var(--ink-surface); }
   .bg-ink-raised  { background-color: var(--ink-raised); }
 
+  /* Thai font */
+  .font-thai { font-family: var(--font-niramit), 'Niramit', sans-serif; }
+
   /* Brass border */
   .border-brass-dim { border-color: var(--brass-dim); }
 

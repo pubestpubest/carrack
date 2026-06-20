@@ -5,9 +5,9 @@ import Link from 'next/link'
 
 // ─── Static tree layout ────────────────────────────────────────────────────────
 
-const NW = 128  // node width
-const NH = 112  // node height
-const IMG_H = 64  // image area height inside node
+const NW = 158  // node width
+const NH = 138  // node height
+const IMG_H = 92  // image area height inside node
 
 type NodeId =
   | 'batali' | 'sailboat' | 'frigate' | 'sailboat_mod'
@@ -26,17 +26,17 @@ type NodeDef = {
 }
 
 const NODES: NodeDef[] = [
-  { id: 'batali',       name: 'Batali Sailboat',      nameTh: 'เรือสำเภาบาทิลลี่',           desc: 'Base starting ship',   cx: 500, y: 28  },
-  { id: 'sailboat',     name: 'Epheria Sailboat',      nameTh: 'เรือสำเภาเอเฟเรีย',           desc: 'Bartering speed',      cx: 210, y: 198 },
-  { id: 'frigate',      name: 'Epheria Frigate',       nameTh: 'เรือฟริเกตเอเฟเรีย',          desc: 'Sea combat speed',     cx: 790, y: 198 },
-  { id: 'sailboat_mod', name: 'Sailboat (Modified)',   nameTh: 'เรือสำเภาเอเฟเรียดัดแปลง',   desc: '+Solo cannon skill',   cx: 58,  y: 368, isLeaf: true },
-  { id: 'caravel',      name: 'Epheria Caravel',       nameTh: 'เรือการค้าเอเฟเรีย',          desc: 'Bartering path',       cx: 305, y: 368 },
-  { id: 'galleass',     name: 'Epheria Galleass',      nameTh: 'เรือแกลลีย์เอเฟเรีย',         desc: 'Combat path',          cx: 695, y: 368 },
-  { id: 'frigate_mod',  name: 'Frigate (Modified)',    nameTh: 'เรือฟริเกตเอเฟเรียดัดแปลง',  desc: '+Solo cannon skill',   cx: 942, y: 368, isLeaf: true },
-  { id: 'advance',      name: 'Carrack: Advance',      nameTh: 'คาร์แร็ค : ทนทาน',            desc: 'Max cargo & barter',   cx: 168, y: 545, isCarrack: true },
-  { id: 'balance',      name: 'Carrack: Balance',      nameTh: 'คาร์แร็ค : สมดุล',             desc: 'All-round balanced',   cx: 396, y: 545, isCarrack: true },
-  { id: 'valor',        name: 'Carrack: Valor',        nameTh: 'คาร์แร็ค : ฉุกเฉิน',          desc: 'Max cannon damage',    cx: 604, y: 545, isCarrack: true },
-  { id: 'volante',      name: 'Carrack: Volante',      nameTh: 'คาร์แร็ค : แข็งแกร่ง',        desc: 'Max travel speed',     cx: 832, y: 545, isCarrack: true },
+  { id: 'batali',       name: 'Batali Sailboat',      nameTh: 'เรือสำเภาบาทิลลี่',           desc: 'Base starting ship',   cx: 555, y: 30   },
+  { id: 'sailboat',     name: 'Epheria Sailboat',      nameTh: 'เรือสำเภาเอเฟเรีย',           desc: 'Bartering speed',      cx: 232, y: 222  },
+  { id: 'frigate',      name: 'Epheria Frigate',       nameTh: 'เรือฟริเกตเอเฟเรีย',          desc: 'Sea combat speed',     cx: 878, y: 222  },
+  { id: 'sailboat_mod', name: 'Sailboat (Modified)',   nameTh: 'เรือสำเภาเอเฟเรียดัดแปลง',   desc: '+Solo cannon skill',   cx: 82,  y: 424, isLeaf: true },
+  { id: 'caravel',      name: 'Epheria Caravel',       nameTh: 'เรือการค้าเอเฟเรีย',          desc: 'Bartering path',       cx: 340, y: 424  },
+  { id: 'galleass',     name: 'Epheria Galleass',      nameTh: 'เรือแกลลีย์เอเฟเรีย',         desc: 'Combat path',          cx: 770, y: 424  },
+  { id: 'frigate_mod',  name: 'Frigate (Modified)',    nameTh: 'เรือฟริเกตเอเฟเรียดัดแปลง',  desc: '+Solo cannon skill',   cx: 1028, y: 424, isLeaf: true },
+  { id: 'advance',      name: 'Carrack: Advance',      nameTh: 'คาร์แร็ค : ทนทาน',            desc: 'Max cargo & barter',   cx: 186, y: 632, isCarrack: true },
+  { id: 'balance',      name: 'Carrack: Balance',      nameTh: 'คาร์แร็ค : สมดุล',             desc: 'All-round balanced',   cx: 448, y: 632, isCarrack: true },
+  { id: 'valor',        name: 'Carrack: Valor',        nameTh: 'คาร์แร็ค : ฉุกเฉิน',          desc: 'Max cannon damage',    cx: 662, y: 632, isCarrack: true },
+  { id: 'volante',      name: 'Carrack: Volante',      nameTh: 'คาร์แร็ค : แข็งแกร่ง',        desc: 'Max travel speed',     cx: 924, y: 632, isCarrack: true },
 ]
 
 const EDGES: [NodeId, NodeId][] = [
@@ -71,16 +71,18 @@ const VARIANT_TO_NODE: Record<string, NodeId> = {
   volante:  'volante',
 }
 
-// ─── Ship placeholder icon (simple SVG boat silhouette) ───────────────────────
+function getImagePath(node: NodeDef): string {
+  if (node.isCarrack) return `/images/items/epheria-carrack-${node.id}.png`
+  return `/images/ships/${node.id}.webp`
+}
+
+// ─── Ship placeholder icon ────────────────────────────────────────────────────
 function ShipIcon({ cx, cy, size, color }: { cx: number; cy: number; size: number; color: string }) {
   const s = size
   return (
     <g fill={color} opacity={0.6}>
-      {/* hull */}
       <path d={`M ${cx - s * 0.6} ${cy + s * 0.15} L ${cx - s * 0.45} ${cy + s * 0.45} L ${cx + s * 0.45} ${cy + s * 0.45} L ${cx + s * 0.6} ${cy + s * 0.15} Z`} />
-      {/* mast */}
       <rect x={cx - 1.5} y={cy - s * 0.5} width={3} height={s * 0.6} rx={1} />
-      {/* sail */}
       <path d={`M ${cx + 1} ${cy - s * 0.45} L ${cx + s * 0.4} ${cy + s * 0.1} L ${cx + 1} ${cy + s * 0.1} Z`} />
     </g>
   )
@@ -105,27 +107,22 @@ export default function ShipTree({
   totalCount,
   goalId,
 }: Props) {
-  // Pre-test every ship image URL; only show <image> for ones that actually load.
-  // SVG <image> fires a non-bubbling error event that React's delegation misses,
-  // so we can't rely on onError there. Use the browser Image API instead.
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     for (const node of NODES) {
       if (node.isLeaf) continue
       const img = new window.Image()
-      img.src = `/images/ships/${node.id}.webp`
+      img.src = getImagePath(node)
       img.onload = () => setLoadedImages(prev => new Set([...prev, node.id]))
-      // onerror → do nothing; node stays absent from loadedImages → ShipIcon shows
     }
   }, [])
 
   const nodeMap = new Map(NODES.map(n => [n.id, n]))
 
-  const currentId = currentVariant ? (VARIANT_TO_NODE[currentVariant] ?? null) : null
-  const goalId_node = goalVariant ? (VARIANT_TO_NODE[goalVariant] ?? null) : null
+  const currentId   = currentVariant ? (VARIANT_TO_NODE[currentVariant] ?? null) : null
+  const goalId_node = goalVariant    ? (VARIANT_TO_NODE[goalVariant]    ?? null) : null
 
-  // Active edges on path from root through current to goal
   const activeEdgeSet = new Set<string>()
   if (goalId_node) {
     const path = FULL_PATHS[goalId_node] ?? []
@@ -134,7 +131,6 @@ export default function ShipTree({
     for (let i = startIdx; i < path.length - 1; i++) {
       activeEdgeSet.add(`${path[i]}|${path[i + 1]}`)
     }
-    // Also highlight edges already passed (dim but gold)
     for (let i = 0; i < startIdx; i++) {
       activeEdgeSet.add(`done|${path[i]}|${path[i + 1]}`)
     }
@@ -196,18 +192,17 @@ export default function ShipTree({
       {/* SVG Tree */}
       <div className="overflow-x-auto rounded-2xl border border-gray-800 bg-[#0d1117] p-2">
         <svg
-          viewBox="0 0 1000 690"
-          className="w-full min-w-[680px]"
-          style={{ maxHeight: '72vh' }}
+          viewBox="0 0 1110 820"
+          className="w-full min-w-[760px]"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
             <filter id="glow-amber" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
               <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
             <filter id="glow-blue" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
               <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
             <linearGradient id="img-bg" x1="0" y1="0" x2="0" y2="1">
@@ -241,7 +236,7 @@ export default function ShipTree({
                 d={`M ${x1} ${y1} C ${x1} ${cy}, ${x2} ${cy}, ${x2} ${y2}`}
                 fill="none"
                 stroke={isActive ? '#3b82f6' : isDone ? '#d4a84388' : '#2d3748'}
-                strokeWidth={isActive ? 2.5 : isDone ? 1.5 : 1}
+                strokeWidth={isActive ? 3 : isDone ? 2 : 1.5}
                 opacity={to.isLeaf ? 0.3 : 1}
               />
             )
@@ -254,102 +249,90 @@ export default function ShipTree({
             const isLeaf    = node.isLeaf ?? false
             const isCarrack = node.isCarrack ?? false
 
-            const L = node.cx - NW / 2  // left edge
-            const T = node.y             // top edge
+            const L = node.cx - NW / 2
+            const T = node.y
 
-            const cardBg    = isLeaf ? '#0d1117' : isCarrack ? '#111c2e' : '#111824'
-            const stroke    = isCurrent ? '#d4a843' : isGoal ? '#3b82f6' : isCarrack ? '#1e3a5f' : '#1e2d3d'
-            const strokeW   = isCurrent || isGoal ? 2.5 : 1.5
-            const opacity   = isLeaf ? 0.4 : 1
+            const cardBg  = isLeaf ? '#0d1117' : isCarrack ? '#111c2e' : '#111824'
+            const stroke  = isCurrent ? '#d4a843' : isGoal ? '#3b82f6' : isCarrack ? '#1e3a5f' : '#1e2d3d'
+            const strokeW = isCurrent || isGoal ? 2.5 : 1.5
+            const opacity = isLeaf ? 0.4 : 1
 
             const iconColor = isCurrent ? '#d4a843' : isGoal ? '#60a5fa' : isCarrack ? '#2563eb' : '#374151'
             const nameColor = isCurrent ? '#fcd34d' : isGoal ? '#93c5fd' : isLeaf ? '#374151' : '#d1d5db'
             const thaiColor = isCurrent ? '#92400e' : isGoal ? '#1e40af' : '#374151'
             const descColor = isCurrent ? '#78350f' : isGoal ? '#1d4ed8' : '#1e2d3d'
 
-            // Progress bar for goal node
-            const barW = NW - 16
+            const barW    = NW - 16
             const barFill = barW * (progress / 100)
 
             return (
               <g key={node.id} opacity={opacity}>
-                {/* Glow halo for current/goal */}
                 {(isCurrent || isGoal) && (
                   <rect
-                    x={L - 4} y={T - 4}
-                    width={NW + 8} height={NH + 8}
-                    rx={13}
+                    x={L - 5} y={T - 5}
+                    width={NW + 10} height={NH + 10}
+                    rx={15}
                     fill="none"
                     stroke={isCurrent ? '#d4a843' : '#3b82f6'}
-                    strokeWidth={8}
-                    opacity={0.25}
+                    strokeWidth={10}
+                    opacity={0.2}
                     filter={`url(#glow-${isCurrent ? 'amber' : 'blue'})`}
                   />
                 )}
 
-                {/* Card */}
-                <rect x={L} y={T} width={NW} height={NH} rx={10}
+                <rect x={L} y={T} width={NW} height={NH} rx={12}
                   fill={cardBg} stroke={stroke} strokeWidth={strokeW} />
 
-                {/* Image area */}
                 <rect x={L + 6} y={T + 6} width={NW - 12} height={IMG_H}
-                  rx={6} fill={isLeaf ? 'url(#img-bg-dead)' : 'url(#img-bg)'} />
+                  rx={8} fill={isLeaf ? 'url(#img-bg-dead)' : 'url(#img-bg)'} />
 
-                {/* Ship icon (always rendered; covered by real image when it loads) */}
                 <ShipIcon
                   cx={node.cx}
                   cy={T + 6 + IMG_H / 2 + 2}
-                  size={isCarrack ? 26 : 22}
+                  size={isCarrack ? 34 : 28}
                   color={iconColor}
                 />
 
-                {/* Real ship image — only rendered after Image() preload confirms it exists */}
                 {loadedImages.has(node.id) && (
                   <image
-                    href={`/images/ships/${node.id}.webp`}
+                    href={getImagePath(node)}
                     x={L + 6} y={T + 6}
                     width={NW - 12} height={IMG_H}
                     preserveAspectRatio="xMidYMid slice"
                   />
                 )}
 
-                {/* Progress bar (goal node only) */}
                 {isGoal && (
                   <>
-                    <rect x={L + 8} y={T + 6 + IMG_H + 4} width={barW} height={4} rx={2} fill="#1a2535" />
-                    <rect x={L + 8} y={T + 6 + IMG_H + 4} width={barFill} height={4} rx={2} fill="#3b82f6" />
+                    <rect x={L + 8} y={T + 6 + IMG_H + 5} width={barW} height={5} rx={2.5} fill="#1a2535" />
+                    <rect x={L + 8} y={T + 6 + IMG_H + 5} width={barFill} height={5} rx={2.5} fill="#3b82f6" />
                   </>
                 )}
 
-                {/* Name */}
-                <text x={node.cx} y={T + IMG_H + 22}
-                  textAnchor="middle" fontSize={9.5} fontWeight="700" fill={nameColor}>
+                <text x={node.cx} y={T + IMG_H + 24}
+                  textAnchor="middle" fontSize={11} fontWeight="700" fill={nameColor}>
                   {node.name}
                 </text>
-                {/* Thai name */}
-                <text x={node.cx} y={T + IMG_H + 34}
-                  textAnchor="middle" fontSize={8} fill={thaiColor}>
+                <text x={node.cx} y={T + IMG_H + 38}
+                  textAnchor="middle" fontSize={12} fill={thaiColor}
+                  style={{ fontFamily: 'var(--font-niramit), Niramit, sans-serif' }}>
                   {node.nameTh}
                 </text>
-                {/* Desc / status */}
-                <text x={node.cx} y={T + IMG_H + 46}
-                  textAnchor="middle" fontSize={7.5} fill={descColor}>
+                <text x={node.cx} y={T + IMG_H + 52}
+                  textAnchor="middle" fontSize={9} fill={descColor}>
                   {isCurrent ? '● You are here' : isGoal ? `▶ Goal · ${progress}%` : node.desc}
                 </text>
 
-                {/* "NOW" badge */}
                 {isCurrent && (
                   <g>
-                    <rect x={L + NW - 32} y={T + 5} width={26} height={13} rx={6.5} fill="#d4a843" />
-                    <text x={L + NW - 19} y={T + 14.5} textAnchor="middle" fontSize={7} fontWeight="800" fill="#000">NOW</text>
+                    <rect x={L + NW - 38} y={T + 6} width={30} height={15} rx={7.5} fill="#d4a843" />
+                    <text x={L + NW - 23} y={T + 16.5} textAnchor="middle" fontSize={8} fontWeight="800" fill="#000">NOW</text>
                   </g>
                 )}
-
-                {/* "GOAL" badge */}
                 {isGoal && (
                   <g>
-                    <rect x={L + NW - 34} y={T + 5} width={28} height={13} rx={6.5} fill="#3b82f6" />
-                    <text x={L + NW - 20} y={T + 14.5} textAnchor="middle" fontSize={7} fontWeight="800" fill="#fff">GOAL</text>
+                    <rect x={L + NW - 42} y={T + 6} width={34} height={15} rx={7.5} fill="#3b82f6" />
+                    <text x={L + NW - 25} y={T + 16.5} textAnchor="middle" fontSize={8} fontWeight="800" fill="#fff">GOAL</text>
                   </g>
                 )}
               </g>
@@ -357,15 +340,15 @@ export default function ShipTree({
           })}
 
           {/* Legend */}
-          <g transform="translate(0, 660)">
-            <circle cx={16} cy={8} r={5} fill="#d4a843" opacity={0.8} />
-            <text x={26} y={12} fontSize={9} fill="#6b7280">Current ship</text>
-            <circle cx={110} cy={8} r={5} fill="#3b82f6" opacity={0.8} />
-            <text x={120} y={12} fontSize={9} fill="#6b7280">Goal</text>
-            <line x1={208} y1={8} x2={228} y2={8} stroke="#3b82f6" strokeWidth={2} />
-            <text x={234} y={12} fontSize={9} fill="#6b7280">Upgrade path</text>
-            <line x1={316} y1={8} x2={336} y2={8} stroke="#2d3748" strokeWidth={1} />
-            <text x={342} y={12} fontSize={9} fill="#6b7280">Other paths</text>
+          <g transform="translate(0, 790)">
+            <circle cx={16} cy={9} r={6} fill="#d4a843" opacity={0.8} />
+            <text x={28} y={13} fontSize={10} fill="#6b7280">Current ship</text>
+            <circle cx={125} cy={9} r={6} fill="#3b82f6" opacity={0.8} />
+            <text x={137} y={13} fontSize={10} fill="#6b7280">Goal</text>
+            <line x1={228} y1={9} x2={252} y2={9} stroke="#3b82f6" strokeWidth={2.5} />
+            <text x={258} y={13} fontSize={10} fill="#6b7280">Upgrade path</text>
+            <line x1={358} y1={9} x2={382} y2={9} stroke="#2d3748" strokeWidth={1.5} />
+            <text x={388} y={13} fontSize={10} fill="#6b7280">Other paths</text>
           </g>
         </svg>
       </div>

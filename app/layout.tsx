@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Cinzel, Spectral } from 'next/font/google'
+import { Cinzel, Spectral, Niramit } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/nav'
 
@@ -18,6 +18,13 @@ const spectral = Spectral({
   display:  'swap',
 })
 
+const niramit = Niramit({
+  subsets:  ['thai', 'latin'],
+  variable: '--font-niramit',
+  weight:   ['300', '400', '500', '600', '700'],
+  display:  'swap',
+})
+
 export const metadata: Metadata = {
   title: 'Carrack Tracker',
   description: 'BDO Epheria Carrack crafting progress tracker',
@@ -29,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${cinzel.variable} ${spectral.variable}`}>
+    <html lang="en" className={`${cinzel.variable} ${spectral.variable} ${niramit.variable}`}>
       <body className={`${spectral.className} antialiased`}>
         <Nav />
         <main className="min-h-screen">{children}</main>

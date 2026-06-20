@@ -47,7 +47,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
 
       <div className="mb-6">
         <h1 className={`text-2xl font-bold grade-${typedItem.grade}`}>{typedItem.name}</h1>
-        {typedItem.name_th && <p className="text-sm text-gray-400">{typedItem.name_th}</p>}
+        {typedItem.name_th && <p className="text-base font-thai text-gray-400">{typedItem.name_th}</p>}
         <div className="mt-2 flex gap-3 text-sm text-gray-500">
           <span className={`grade-${typedItem.grade}`}>{typedItem.grade}</span>
           <span>·</span>

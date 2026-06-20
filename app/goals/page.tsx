@@ -244,7 +244,7 @@ export default async function GoalsPage() {
                       className="flex flex-1 items-center gap-3 px-5 py-4 transition-colors hover:bg-gray-800/40"
                     >
                       <div
-                        className={`shrink-0 h-14 w-14 rounded-lg overflow-hidden border grade-frame-${item?.grade ?? 'white'}`}
+                        className={`shrink-0 h-20 w-20 rounded-lg overflow-hidden border grade-frame-${item?.grade ?? 'white'}`}
                         style={{ backgroundColor: GRADE_BG[item?.grade ?? 'white'] ?? '#1f2937' }}
                       >
                         {item?.image_url && (
@@ -314,7 +314,7 @@ export default async function GoalsPage() {
                         </div>
                         <div className="flex-1 min-w-0 space-y-1">
                           <div className="flex items-center justify-between gap-2">
-                            <span className={`text-xs font-medium grade-${row.grade} leading-snug`}>{row.nameTh ?? row.name}</span>
+                            <span className={`text-sm font-medium font-thai grade-${row.grade} leading-snug`}>{row.nameTh ?? row.name}</span>
                             <div className="shrink-0 text-right">
                               <span className="tabular-nums text-xs text-gray-500">{row.have}/{row.needed}</span>
                               {row.crowCoinPrice != null && (
@@ -351,7 +351,7 @@ export default async function GoalsPage() {
                             <img src={row.imageUrl} alt={row.name} className="h-full w-full object-cover" />
                           )}
                         </div>
-                        <span className="flex-1 text-xs text-gray-600 leading-snug">{row.nameTh ?? row.name}</span>
+                        <span className="flex-1 text-sm font-thai text-gray-600 leading-snug">{row.nameTh ?? row.name}</span>
                         <span className="shrink-0 text-xs text-green-600">✓</span>
                       </div>
                     ))}

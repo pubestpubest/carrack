@@ -27,7 +27,7 @@ export default function ExpandableEquipmentRow({ row }: Props) {
       <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-900/60 transition-colors">
         {/* Image */}
         <div
-          className={`shrink-0 h-14 w-14 rounded-lg overflow-hidden border grade-frame-${row.grade}`}
+          className={`shrink-0 h-20 w-20 rounded-lg overflow-hidden border grade-frame-${row.grade}`}
           style={{ backgroundColor: GRADE_PLACEHOLDER[row.grade] ?? '#1f2937' }}
         >
           {row.imageUrl && (
@@ -38,8 +38,8 @@ export default function ExpandableEquipmentRow({ row }: Props) {
 
         {/* Name + price */}
         <div className="min-w-0 flex-1">
-          <p className={`text-sm font-medium grade-${row.grade} leading-snug`}>{row.nameTh ?? row.name}</p>
-          <p className="text-xs text-gray-600 leading-snug">{row.name}</p>
+          <p className={`text-base font-medium font-thai grade-${row.grade} leading-snug`}>{row.nameTh ?? row.name}</p>
+          <p className="text-sm text-gray-600 leading-snug">{row.name}</p>
           {row.crowCoinPrice != null && (
             <p className="text-xs text-amber-500/60 leading-snug">🪙 {row.crowCoinPrice.toLocaleString()}</p>
           )}
@@ -91,7 +91,7 @@ export default function ExpandableEquipmentRow({ row }: Props) {
             <div key={sub.itemId} className="flex items-center gap-2 py-1.5">
               {/* Small image */}
               <div
-                className={`shrink-0 h-9 w-9 rounded overflow-hidden border grade-frame-${sub.grade}`}
+                className={`shrink-0 h-12 w-12 rounded overflow-hidden border grade-frame-${sub.grade}`}
                 style={{ backgroundColor: GRADE_PLACEHOLDER[sub.grade] ?? '#1f2937' }}
               >
                 {sub.imageUrl && (
@@ -102,7 +102,7 @@ export default function ExpandableEquipmentRow({ row }: Props) {
 
               {/* Name */}
               <div className="min-w-0 flex-1">
-                <p className={`text-xs font-medium grade-${sub.grade} leading-snug`}>{sub.nameTh ?? sub.name}</p>
+                <p className={`text-sm font-medium font-thai grade-${sub.grade} leading-snug`}>{sub.nameTh ?? sub.name}</p>
                 <p className="text-xs text-gray-700 leading-snug">{sub.name}</p>
               </div>
 

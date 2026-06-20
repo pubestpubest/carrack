@@ -223,7 +223,7 @@ function GroupedRows({ rows }: { rows: GapRowType[] }) {
                   >
                     {/* Image / placeholder */}
                     <div
-                      className={`shrink-0 h-14 w-14 rounded-lg overflow-hidden border grade-frame-${row.grade}`}
+                      className={`shrink-0 h-20 w-20 rounded-lg overflow-hidden border grade-frame-${row.grade}`}
                       style={{ backgroundColor: GRADE_PLACEHOLDER[row.grade] ?? '#1f2937' }}
                     >
                       {row.imageUrl && (
@@ -234,8 +234,8 @@ function GroupedRows({ rows }: { rows: GapRowType[] }) {
 
                     {/* Name + price */}
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm font-medium grade-${row.grade} leading-snug`}>{row.nameTh ?? row.name}</p>
-                      <p className="text-xs text-gray-600 leading-snug">{row.name}</p>
+                      <p className={`text-base font-medium font-thai grade-${row.grade} leading-snug`}>{row.nameTh ?? row.name}</p>
+                      <p className="text-sm text-gray-600 leading-snug">{row.name}</p>
                       {row.crowCoinPrice != null && (
                         <p className="text-xs text-amber-500/60 leading-snug">🪙 {row.crowCoinPrice.toLocaleString()}</p>
                       )}
