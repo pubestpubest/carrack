@@ -11,7 +11,7 @@ export default function ShipGoalImage({
   className?: string
 }) {
   const [failed, setFailed] = useState(false)
-  const src = variant ? `/images/ships/${variant}.webp` : null
+  const src = variant ? `/images/items/epheria-carrack-${variant}.png` : null
 
   return (
     <div className={`relative overflow-hidden bg-gradient-to-b from-[#1c2840] to-[#0d1624] ${className}`}>

@@ -23,7 +23,7 @@ const GRADE_PLACEHOLDER: Record<string, string> = {
   red:    '#2a0a0a',
 }
 
-const CATEGORY_ORDER   = ['equipment', 'material', 'stone', 'license', 'currency'] as const
+const CATEGORY_ORDER   = ['equipment', 'material', 'stone', 'license'] as const
 const CATEGORY_LABEL: Record<string, string> = {
   equipment: 'Ship Equipment',
   material:  'Materials',
@@ -44,11 +44,11 @@ const INNER_GRID: Record<string, string> = {
   equipment: 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
   material:  'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
   stone:     'grid grid-cols-1 gap-x-4',
-  license:   'grid grid-cols-1 gap-x-4',
+  license:   'grid grid-cols-1 md:grid-cols-2 gap-x-4',
   currency:  'grid grid-cols-1 md:grid-cols-2 gap-x-4',
 }
 
-const CATEGORIES = ['equipment', 'material', 'stone', 'license', 'currency']
+const CATEGORIES = ['equipment', 'material', 'stone', 'license']
 
 export default function InventoryBento({ items }: { items: ItemRow[] }) {
   const [search,    setSearch]    = useState('')
@@ -67,6 +67,7 @@ export default function InventoryBento({ items }: { items: ItemRow[] }) {
   const getActualQty = (item: ItemRow) =>
     saved[item.item_id] ?? item.qty_have
 
+  const crowCoinItem  = items.find(i => i.name === 'Crow Coin')
   const itemsInStock  = items.filter(i => getActualQty(i) > 0).length
   const totalTracked  = items.length
   const totalQuantity = items.reduce((sum, i) => sum + getActualQty(i), 0)
@@ -113,10 +114,35 @@ export default function InventoryBento({ items }: { items: ItemRow[] }) {
   return (
     <div className="space-y-4">
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard label="Item Types" value={totalTracked} sub="in catalogue" />
         <StatCard label="In Stock"   value={itemsInStock} sub={`of ${totalTracked}`} accent />
         <StatCard label="Total Qty"  value={totalQuantity.toLocaleString()} sub="across all items" />
+        {crowCoinItem && (
+          <div className="rounded-2xl border border-amber-900/40 bg-amber-950/20 p-5 flex items-center gap-3">
+            {crowCoinItem.image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={crowCoinItem.image_url} alt="Crow Coin" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-amber-600/80 mb-1 font-thai">{crowCoinItem.name_th ?? 'Crow Coin'}</p>
+              <input
+                type="number"
+                min={0}
+                value={getQty(crowCoinItem)}
+                onChange={e => handleChange(crowCoinItem.item_id, e.target.value)}
+                onBlur={() => handleBlur(crowCoinItem.item_id)}
+                className={`w-full rounded-lg border px-2 py-1 text-right text-lg font-bold tabular-nums transition-colors focus:outline-none ${
+                  flash[crowCoinItem.item_id]
+                    ? 'border-green-600 bg-green-950 text-green-400'
+                    : getActualQty(crowCoinItem) > 0
+                      ? 'border-amber-800/60 bg-amber-950/40 text-amber-300 focus:border-amber-500'
+                      : 'border-gray-800 bg-transparent text-gray-500 focus:border-amber-500 focus:bg-gray-800'
+                }`}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filters */}

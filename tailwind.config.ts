@@ -6,6 +6,11 @@ const config: Config = {
     './components/**/*.{ts,tsx}',
     './lib/**/*.{ts,tsx}',
   ],
+  safelist: [
+    'grade-white',  'grade-green',  'grade-blue',  'grade-yellow',  'grade-orange',  'grade-red',
+    'grade-frame-white', 'grade-frame-green', 'grade-frame-blue',
+    'grade-frame-yellow', 'grade-frame-orange', 'grade-frame-red',
+  ],
   theme: {
     extend: {
       fontFamily: {

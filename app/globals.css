@@ -55,22 +55,24 @@
   input[type='number'] { -moz-appearance: textfield; }
 }
 
-@layer utilities {
-  /* BDO item grade colors — text */
-  .grade-white  { color: #d0cfc8; }
-  .grade-green  { color: #4ade80; }
-  .grade-blue   { color: #7dc4f0; }
-  .grade-yellow { color: #fbbf24; }
-  .grade-orange { color: #fb923c; }
-  .grade-red    { color: #f87171; }
+/* ── BDO item grade colors — outside @layer so Tailwind never purges them ── */
+.grade-white  { color: #d0cfc8; }
+.grade-green  { color: #4ade80; }
+.grade-blue   { color: #7dc4f0; }
+.grade-yellow { color: #fbbf24; }
+.grade-orange { color: #fb923c; }
+.grade-red    { color: #f87171; }
 
-  /* BDO item grade colors — image frame border */
-  .grade-frame-white  { border-color: rgba(208, 207, 200, 0.35); }
-  .grade-frame-green  { border-color: rgba(74,  222, 128, 0.40); }
-  .grade-frame-blue   { border-color: rgba(125, 196, 240, 0.40); }
-  .grade-frame-yellow { border-color: rgba(251, 191,  36, 0.45); }
-  .grade-frame-orange { border-color: rgba(251, 146,  60, 0.45); }
-  .grade-frame-red    { border-color: rgba(248, 113, 113, 0.45); }
+.grade-frame-white  { border-color: rgba(208, 207, 200, 0.35); }
+.grade-frame-green  { border-color: rgba(74,  222, 128, 0.40); }
+.grade-frame-blue   { border-color: rgba(125, 196, 240, 0.40); }
+.grade-frame-yellow { border-color: rgba(251, 191,  36, 0.45); }
+.grade-frame-orange { border-color: rgba(251, 146,  60, 0.45); }
+.grade-frame-red    { border-color: rgba(248, 113, 113, 0.45); }
+
+@layer utilities {
+  /* Thai font */
+  .font-thai { font-family: var(--font-niramit), 'Niramit', sans-serif; }
 
   /* Brass text utility */
   .text-brass       { color: var(--brass); }
@@ -80,9 +82,6 @@
   .bg-ink         { background-color: var(--ink); }
   .bg-ink-surface { background-color: var(--ink-surface); }
   .bg-ink-raised  { background-color: var(--ink-raised); }
-
-  /* Thai font */
-  .font-thai { font-family: var(--font-niramit), 'Niramit', sans-serif; }
 
   /* Brass border */
   .border-brass-dim { border-color: var(--brass-dim); }

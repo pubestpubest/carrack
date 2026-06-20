@@ -26,17 +26,17 @@ type NodeDef = {
 }
 
 const NODES: NodeDef[] = [
-  { id: 'batali',       name: 'Batali Sailboat',      nameTh: 'เรือสำเภาบาทิลลี่',           desc: 'Base starting ship',   cx: 555, y: 30   },
-  { id: 'sailboat',     name: 'Epheria Sailboat',      nameTh: 'เรือสำเภาเอเฟเรีย',           desc: 'Bartering speed',      cx: 232, y: 222  },
-  { id: 'frigate',      name: 'Epheria Frigate',       nameTh: 'เรือฟริเกตเอเฟเรีย',          desc: 'Sea combat speed',     cx: 878, y: 222  },
-  { id: 'sailboat_mod', name: 'Sailboat (Modified)',   nameTh: 'เรือสำเภาเอเฟเรียดัดแปลง',   desc: '+Solo cannon skill',   cx: 82,  y: 424, isLeaf: true },
-  { id: 'caravel',      name: 'Epheria Caravel',       nameTh: 'เรือการค้าเอเฟเรีย',          desc: 'Bartering path',       cx: 340, y: 424  },
-  { id: 'galleass',     name: 'Epheria Galleass',      nameTh: 'เรือแกลลีย์เอเฟเรีย',         desc: 'Combat path',          cx: 770, y: 424  },
-  { id: 'frigate_mod',  name: 'Frigate (Modified)',    nameTh: 'เรือฟริเกตเอเฟเรียดัดแปลง',  desc: '+Solo cannon skill',   cx: 1028, y: 424, isLeaf: true },
-  { id: 'advance',      name: 'Carrack: Advance',      nameTh: 'คาร์แร็ค : ทนทาน',            desc: 'Max cargo & barter',   cx: 186, y: 632, isCarrack: true },
-  { id: 'balance',      name: 'Carrack: Balance',      nameTh: 'คาร์แร็ค : สมดุล',             desc: 'All-round balanced',   cx: 448, y: 632, isCarrack: true },
-  { id: 'valor',        name: 'Carrack: Valor',        nameTh: 'คาร์แร็ค : ฉุกเฉิน',          desc: 'Max cannon damage',    cx: 662, y: 632, isCarrack: true },
-  { id: 'volante',      name: 'Carrack: Volante',      nameTh: 'คาร์แร็ค : แข็งแกร่ง',        desc: 'Max travel speed',     cx: 924, y: 632, isCarrack: true },
+  { id: 'batali',       name: 'Batali Sailboat',      nameTh: 'เรือสำเภาบาทิลลี่',           desc: 'Base starting ship',   cx: 555, y: 16   },
+  { id: 'sailboat',     name: 'Epheria Sailboat',      nameTh: 'เรือสำเภาเอเฟเรีย',           desc: 'Bartering speed',      cx: 232, y: 178  },
+  { id: 'frigate',      name: 'Epheria Frigate',       nameTh: 'เรือฟริเกตเอเฟเรีย',          desc: 'Sea combat speed',     cx: 878, y: 178  },
+  { id: 'sailboat_mod', name: 'Sailboat (Modified)',   nameTh: 'เรือสำเภาเอเฟเรียดัดแปลง',   desc: '+Solo cannon skill',   cx: 82,  y: 342, isLeaf: true },
+  { id: 'caravel',      name: 'Epheria Caravel',       nameTh: 'เรือการค้าเอเฟเรีย',          desc: 'Bartering path',       cx: 340, y: 342  },
+  { id: 'galleass',     name: 'Epheria Galleass',      nameTh: 'เรือแกลลีย์เอเฟเรีย',         desc: 'Combat path',          cx: 770, y: 342  },
+  { id: 'frigate_mod',  name: 'Frigate (Modified)',    nameTh: 'เรือฟริเกตเอเฟเรียดัดแปลง',  desc: '+Solo cannon skill',   cx: 1028, y: 342, isLeaf: true },
+  { id: 'advance',      name: 'Carrack: Advance',      nameTh: 'คาร์แร็ค : ทนทาน',            desc: 'Max cargo & barter',   cx: 186, y: 506, isCarrack: true },
+  { id: 'balance',      name: 'Carrack: Balance',      nameTh: 'คาร์แร็ค : สมดุล',             desc: 'All-round balanced',   cx: 448, y: 506, isCarrack: true },
+  { id: 'valor',        name: 'Carrack: Valor',        nameTh: 'คาร์แร็ค : ฉุกเฉิน',          desc: 'Max cannon damage',    cx: 662, y: 506, isCarrack: true },
+  { id: 'volante',      name: 'Carrack: Volante',      nameTh: 'คาร์แร็ค : แข็งแกร่ง',        desc: 'Max travel speed',     cx: 924, y: 506, isCarrack: true },
 ]
 
 const EDGES: [NodeId, NodeId][] = [
@@ -192,7 +192,7 @@ export default function ShipTree({
       {/* SVG Tree */}
       <div className="overflow-x-auto rounded-2xl border border-gray-800 bg-[#0d1117] p-2">
         <svg
-          viewBox="0 0 1110 820"
+          viewBox="0 0 1110 670"
           className="w-full min-w-[760px]"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -340,7 +340,7 @@ export default function ShipTree({
           })}
 
           {/* Legend */}
-          <g transform="translate(0, 790)">
+          <g transform="translate(0, 638)">
             <circle cx={16} cy={9} r={6} fill="#d4a843" opacity={0.8} />
             <text x={28} y={13} fontSize={10} fill="#6b7280">Current ship</text>
             <circle cx={125} cy={9} r={6} fill="#3b82f6" opacity={0.8} />

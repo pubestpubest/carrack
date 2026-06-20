@@ -119,6 +119,13 @@ export default async function GoalsPage() {
   const combinedMissing  = combinedRows.filter(r => r.missing > 0).length
   const combinedTotal    = combinedRows.length
 
+  const crowCoinItem   = allItems?.find(i => i.name === 'Crow Coin')
+  const crowCoinHave   = inventory?.find(i => i.item_id === crowCoinItem?.item_id)?.qty_have ?? 0
+  const crowCoinNeeded = combinedRows
+    .filter(r => r.missing > 0 && r.crowCoinPrice != null)
+    .reduce((sum, r) => sum + (r.crowCoinPrice! * r.missing), 0)
+  const crowCoinDiff   = crowCoinHave - crowCoinNeeded
+
   const hasAnyGoal = activeGoals.length > 0
 
   return (
@@ -154,9 +161,11 @@ export default async function GoalsPage() {
       )}
 
       {hasAnyGoal && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 items-start">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 items-start">
 
-          {/* ── Column 1: Ship Goal ─────────────────────────────────────── */}
+          {/* ── Column 1: Ship Goal + Equipment Goals stacked ───────────── */}
+          <div className="space-y-4">
+
           <div className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900">
             <ShipGoalImage
               variant={shipGoalVariant}
@@ -166,7 +175,7 @@ export default async function GoalsPage() {
             {activeShipGoal && shipGoalItem ? (
               <div className="space-y-4 p-5">
                 <div>
-                  <p className={`text-lg font-bold grade-${shipGoalItem.grade}`}>{shipGoalItem.name_th ?? shipGoalItem.name}</p>
+                  <p className={`text-lg font-bold font-thai grade-${shipGoalItem.grade}`}>{shipGoalItem.name_th ?? shipGoalItem.name}</p>
                   <p className="mt-0.5 text-xs text-gray-500">{shipGoalItem.name}</p>
                 </div>
                 {shipCurrentStage && shipCurrentStage.variant !== 'none' && (
@@ -207,7 +216,7 @@ export default async function GoalsPage() {
             )}
           </div>
 
-          {/* ── Column 2: Equipment Goals ───────────────────────────────── */}
+          {/* ── Equipment Goals ─────────────────────────────────────────── */}
           <div className="rounded-2xl border border-gray-800 bg-gray-900">
             <div className="flex items-center justify-between border-b border-gray-800 px-5 py-4">
               <div>
@@ -253,7 +262,7 @@ export default async function GoalsPage() {
                         )}
                       </div>
                       <div className="flex-1">
-                        <p className={`text-sm font-medium grade-${item?.grade ?? 'white'} leading-snug`}>
+                        <p className={`text-sm font-medium font-thai grade-${item?.grade ?? 'white'} leading-snug`}>
                           {item?.name_th ?? item?.name ?? 'Unknown'}
                         </p>
                         <p className="text-xs text-gray-600 leading-snug">{item?.name}</p>
@@ -278,14 +287,30 @@ export default async function GoalsPage() {
             )}
           </div>
 
-          {/* ── Column 3: Combined Gap Analysis ─────────────────────────── */}
+          </div>{/* end space-y-4 left column */}
+
+          {/* ── Column 2: Combined Gap Analysis ─────────────────────────── */}
           <div className="rounded-2xl border border-gray-800 bg-gray-900">
-            <div className="border-b border-gray-800 px-5 py-4">
-              <h2 className="font-semibold">Combined Materials</h2>
-              {combinedRows.length > 0 && (
-                <p className="mt-0.5 text-xs text-gray-500">
-                  {activeGoals.length} goal{activeGoals.length !== 1 ? 's' : ''} merged · {combinedProgress}% ready
-                </p>
+            <div className="border-b border-gray-800 px-5 py-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-semibold">Combined Materials</h2>
+                {combinedRows.length > 0 && (
+                  <p className="mt-0.5 text-xs text-gray-500">
+                    {activeGoals.length} goal{activeGoals.length !== 1 ? 's' : ''} merged · {combinedProgress}% ready
+                  </p>
+                )}
+              </div>
+              {crowCoinNeeded > 0 && (
+                <div className="shrink-0 text-right">
+                  <div className="flex items-center justify-end gap-1 text-xs text-amber-500/80 font-medium">
+                    🪙 <span>{crowCoinHave.toLocaleString()}</span>
+                    <span className="text-gray-600">/</span>
+                    <span>{crowCoinNeeded.toLocaleString()}</span>
+                  </div>
+                  <p className={`text-xs font-semibold tabular-nums ${crowCoinDiff >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {crowCoinDiff >= 0 ? '+' : ''}{crowCoinDiff.toLocaleString()}
+                  </p>
+                </div>
               )}
             </div>
 

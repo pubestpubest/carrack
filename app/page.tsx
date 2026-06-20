@@ -19,7 +19,7 @@ export default async function DashboardPage() {
     { data: profile },
     { data: stages },
   ] = await Promise.all([
-    supabase.from('user_goals').select('*').eq('user_id', user.id).eq('is_active', true).order('created_at', { ascending: false }),
+    supabase.from('user_goals').select('*').eq('user_id', user.id).order('is_active', { ascending: false }).order('created_at', { ascending: false }),
     supabase.from('user_inventory').select('item_id, qty_have').eq('user_id', user.id),
     supabase.from('recipes').select('recipe_id, output_item_id, output_qty'),
     supabase.from('recipe_ingredients').select('recipe_id, item_id, qty'),
@@ -28,7 +28,8 @@ export default async function DashboardPage() {
     supabase.from('ship_stages').select('stage_id, ship_name, variant'),
   ])
 
-  const activeGoal = (goals as Tables<'user_goals'>[] | null)?.[0] ?? null
+  const typedGoals = (goals as Tables<'user_goals'>[] | null) ?? []
+  const activeGoal = typedGoals.find(g => g.current_stage_id != null) ?? typedGoals[0] ?? null
 
   const stageMap = new Map((stages ?? []).map(s => [s.stage_id, s]))
 
