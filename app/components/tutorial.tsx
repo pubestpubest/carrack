@@ -224,11 +224,13 @@ export default function Tutorial() {
 
       {active && createPortal(
         <>
-          {/* Backdrop — pointer-events none so the spotlighted elements remain clickable */}
-          <div className="fixed inset-0 bg-black/65 pointer-events-none"
-               style={{ zIndex: 9990 }} />
+          {/* Backdrop — only for steps with no spotlight target (welcome / done) */}
+          {!rect && (
+            <div className="fixed inset-0 bg-black/60 pointer-events-none"
+                 style={{ zIndex: 9990 }} />
+          )}
 
-          {/* Static spotlight ring */}
+          {/* Static spotlight ring — box-shadow creates the dark surround; interior stays bright */}
           {rect && (
             <div className="pointer-events-none fixed"
               style={{
