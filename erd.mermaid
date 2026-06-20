@@ -1,0 +1,129 @@
+erDiagram
+
+    ITEM {
+        int     item_id     PK
+        string  name
+        string  grade       "white / green / blue"
+        string  category    "equipment / material / stone / license / currency"
+        int     tier        "0=basic 1=precarrack-mat 2=blue-acc 3=carrack 4=seezily"
+        string  image_url
+    }
+
+    SHIP {
+        int     ship_id         PK
+        int     stage_id        FK
+        string  image_url
+        float   speed           "km/h"
+        float   acceleration    "%"
+        float   turn            "%"
+        float   brake           "%"
+        int     hp              "durability"
+        float   weight_limit    "LT"
+        int     inventory_slots
+        int     cannon_damage
+        float   cannon_speed    "%"
+        int     cannon_range
+        int     crew_max
+    }
+
+    RECIPE {
+        int     recipe_id   PK
+        string  name
+        string  type        "craft / convert / upgrade"
+        string  location    "workshop / pallazo / etc"
+        int     output_item_id  FK
+        int     output_qty
+    }
+
+    RECIPE_INGREDIENT {
+        int     recipe_id   FK
+        int     item_id     FK
+        int     qty
+    }
+
+    ACQUISITION_METHOD {
+        int     method_id   PK
+        int     item_id     FK
+        string  type        "buy / exchange / craft / daily / quest / kill / process / mine / fish"
+        string  source
+        string  currency
+        int     cost
+        int     yield_per_action
+    }
+
+    TRADE_EXCHANGE {
+        int     id          PK
+        int     input_item_id   FK
+        int     output_item_id  FK
+        int     input_qty
+        int     output_qty
+        int     tier_required   "1-5"
+    }
+
+    ENHANCEMENT {
+        int     id              PK
+        int     base_item_id    FK
+        int     result_item_id  FK
+        int     stone_item_id   FK
+        int     level_from
+        int     level_to
+    }
+
+    SHIP_STAGE {
+        int     stage_id    PK
+        string  ship_name
+        int     stage_order "1=epheria 2=modified 3=pre-carrack 4=carrack"
+        string  variant     "sailboat / frigate / trade / galley / balance / valor / etc"
+        int     recipe_id   FK
+    }
+
+    ITEM             ||--o{  RECIPE_INGREDIENT  : "ingredient in"
+    RECIPE           ||--o{  RECIPE_INGREDIENT  : "requires"
+    RECIPE           }o--||  ITEM               : "produces"
+    ITEM             ||--o{  ACQUISITION_METHOD : "obtained via"
+    ITEM             ||--o{  TRADE_EXCHANGE     : "traded in"
+    ITEM             ||--o{  TRADE_EXCHANGE     : "traded for"
+    ITEM             ||--o{  ENHANCEMENT        : "base of"
+    ITEM             ||--o{  ENHANCEMENT        : "stone for"
+    ITEM             ||--o{  ENHANCEMENT        : "result of"
+    SHIP_STAGE       }o--o|  RECIPE             : "built via"
+    SHIP_STAGE       ||--o{  SHIP               : "has stats"
+
+    USER {
+        int     user_id         PK
+        string  username
+        string  password_hash
+        timestamp created_at
+    }
+
+    USER_INVENTORY {
+        int     id              PK
+        int     user_id         FK
+        int     item_id         FK
+        int     qty_have
+        timestamp updated_at
+    }
+
+    USER_SHIP_PROGRESS {
+        int     id              PK
+        int     user_id         FK
+        int     stage_id        FK
+        string  status          "not_started / in_progress / complete"
+        timestamp started_at
+        timestamp completed_at
+    }
+
+    USER_RECIPE_LOG {
+        int     id              PK
+        int     user_id         FK
+        int     recipe_id       FK
+        int     times_crafted
+        timestamp last_crafted_at
+    }
+
+    USER             ||--o{  USER_INVENTORY      : "owns"
+    USER             ||--o{  USER_SHIP_PROGRESS  : "tracks"
+    USER             ||--o{  USER_RECIPE_LOG     : "has crafted"
+    ITEM             ||--o{  USER_INVENTORY      : "stocked as"
+    SHIP_STAGE       ||--o{  USER_SHIP_PROGRESS  : "progressed in"
+    RECIPE           ||--o{  USER_RECIPE_LOG     : "logged in"

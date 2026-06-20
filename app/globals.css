@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Brass / Nautical palette ──────────────────────────────────── */
+:root {
+  --brass:        #c8a84b;
+  --brass-light:  #e2c97e;
+  --brass-dim:    rgba(200, 168, 75, 0.25);
+  --brass-glow:   rgba(200, 168, 75, 0.08);
+  --ink:          #060a12;
+  --ink-navy:     #0b1220;
+  --ink-surface:  #111d30;
+  --ink-raised:   #182540;
+  --parchment:    #d0c9b4;
+  --parchment-dim:#7a7464;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    background-color: var(--ink);
+    /* Chart-paper grid — very subtle brass lines on deep navy */
+    background-image:
+      linear-gradient(rgba(200, 168, 75, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200, 168, 75, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    color: #c8c3b4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Thin brass-tinted scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #2a3a55 transparent;
+  }
+
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a3a55; border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--brass-dim); }
+
+  /* Cinzel for all display headings */
+  h1, h2, h3 {
+    font-family: var(--font-cinzel), serif;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    color: var(--parchment);
+  }
+
+  /* Hide number input spinners */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type='number'] { -moz-appearance: textfield; }
+}
+
+@layer utilities {
+  /* BDO item grade colors — text */
+  .grade-white  { color: #d0cfc8; }
+  .grade-green  { color: #4ade80; }
+  .grade-blue   { color: #7dc4f0; }
+  .grade-yellow { color: #fbbf24; }
+  .grade-orange { color: #fb923c; }
+  .grade-red    { color: #f87171; }
+
+  /* BDO item grade colors — image frame border */
+  .grade-frame-white  { border-color: rgba(208, 207, 200, 0.35); }
+  .grade-frame-green  { border-color: rgba(74,  222, 128, 0.40); }
+  .grade-frame-blue   { border-color: rgba(125, 196, 240, 0.40); }
+  .grade-frame-yellow { border-color: rgba(251, 191,  36, 0.45); }
+  .grade-frame-orange { border-color: rgba(251, 146,  60, 0.45); }
+  .grade-frame-red    { border-color: rgba(248, 113, 113, 0.45); }
+
+  /* Brass text utility */
+  .text-brass       { color: var(--brass); }
+  .text-brass-light { color: var(--brass-light); }
+
+  /* Ink surface backgrounds */
+  .bg-ink         { background-color: var(--ink); }
+  .bg-ink-surface { background-color: var(--ink-surface); }
+  .bg-ink-raised  { background-color: var(--ink-raised); }
+
+  /* Brass border */
+  .border-brass-dim { border-color: var(--brass-dim); }
+
+  /* Chart paper card */
+  .card-nautical {
+    background-color: var(--ink-surface);
+    border: 1px solid var(--brass-dim);
+    border-radius: 0.75rem;
+  }
+}
