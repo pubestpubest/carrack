@@ -28,10 +28,10 @@ const STEPS: Step[] = [
   // ── 3. Click + New Goal ───────────────────────────────────────────────────────
   {
     title:     'สร้างเป้าหมายใหม่',
-    body:      'กดปุ่ม "+ New Goal" เพื่อเริ่มติดตามการสร้าง Carrack',
-    selector:  '[data-tour="new-goal"]',
+    body:      'กดปุ่ม "+ New Goal" ที่มุมขวาของส่วนนี้ เพื่อเริ่มติดตามการสร้าง Carrack',
+    selector:  '[data-tour="captain-log-header"]',
     advanceOn: '[data-tour="new-goal"]',
-    hint:      'กดปุ่ม + New Goal เพื่อไปต่อ',
+    hint:      'กดปุ่ม + New Goal มุมขวา',
   },
   // ── 4. Click Ship Goal button ────────────────────────────────────────────────
   {

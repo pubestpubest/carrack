@@ -67,6 +67,7 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       {/* Header — chart-room command banner */}
       <div
+        data-tour="captain-log-header"
         className="mb-7 flex items-end justify-between rounded-2xl px-7 py-6"
         style={{
           background: 'linear-gradient(135deg, var(--ink-surface) 0%, rgba(11,18,32,0.8) 100%)',
