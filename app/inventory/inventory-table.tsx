@@ -44,7 +44,7 @@ const INNER_GRID: Record<string, string> = {
   equipment: 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
   material:  'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
   stone:     'grid grid-cols-1 gap-x-4',
-  license:   'grid grid-cols-1 md:grid-cols-2 gap-x-4',
+  license:   'grid grid-cols-1 gap-x-4',
   currency:  'grid grid-cols-1 md:grid-cols-2 gap-x-4',
 }
 
