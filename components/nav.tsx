@@ -2,7 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+
+const OWNER_EMAIL = 'pubest12@gmail.com'
 
 const links = [
   { href: '/',          label: 'Dashboard' },
@@ -12,8 +15,15 @@ const links = [
 ]
 
 export default function Nav() {
-  const pathname = usePathname()
-  const router   = useRouter()
+  const pathname  = usePathname()
+  const router    = useRouter()
+  const [isOwner, setIsOwner] = useState(false)
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      setIsOwner(user?.email === OWNER_EMAIL)
+    })
+  }, [])
 
   async function signOut() {
     const supabase = createClient()
@@ -78,6 +88,19 @@ export default function Nav() {
               </Link>
             )
           })}
+          {isOwner && (
+            <Link
+              href="/admin"
+              className={[
+                'font-display rounded-md px-3 py-1.5 text-xs font-semibold tracking-widest transition-all duration-200',
+                pathname.startsWith('/admin')
+                  ? 'text-rose-300 bg-rose-950/40 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.3)]'
+                  : 'text-rose-800 hover:text-rose-500',
+              ].join(' ')}
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* Sign out */}

@@ -50,9 +50,16 @@ const INNER_GRID: Record<string, string> = {
 
 const CATEGORIES = ['equipment', 'material', 'stone', 'license']
 
+const GRADE_RANK: Record<string, number> = {
+  white: 0, green: 1, blue: 2, yellow: 3, orange: 4, red: 5,
+}
+
+type SortKey = 'qty-hl' | 'qty-lh' | 'grade-hl' | 'grade-lh'
+
 export default function InventoryBento({ items }: { items: ItemRow[] }) {
   const [search,    setSearch]    = useState('')
   const [category,  setCategory]  = useState('')
+  const [sorts,     setSorts]     = useState<Record<string, SortKey>>({})
   const [editing,   setEditing]   = useState<Record<number, string>>({})
   const [saved,     setSaved]     = useState<Record<number, number>>({})
   const [flash,     setFlash]     = useState<Record<number, boolean>>({})
@@ -172,22 +179,43 @@ export default function InventoryBento({ items }: { items: ItemRow[] }) {
           const span  = CATEGORY_SPAN[cat] ?? ''
           const inner = INNER_GRID[cat]    ?? ''
 
+          const sort = sorts[cat] ?? 'grade-hl'
+          const sortedItems = [...catItems].sort((a, b) => {
+            switch (sort) {
+              case 'qty-lh':   return getActualQty(a) - getActualQty(b)
+              case 'qty-hl':   return getActualQty(b) - getActualQty(a)
+              case 'grade-lh': return (GRADE_RANK[a.grade] ?? 0) - (GRADE_RANK[b.grade] ?? 0)
+              case 'grade-hl': return (GRADE_RANK[b.grade] ?? 0) - (GRADE_RANK[a.grade] ?? 0)
+              default:         return 0
+            }
+          })
+
           return (
             <div
               key={cat}
               className={`rounded-2xl border border-gray-800 bg-gray-900 p-6 ${span}`}
             >
               {/* Card header */}
-              <div className="mb-5 flex items-center justify-between">
+              <div className="mb-5 flex items-center gap-3">
                 <h2 className="text-base font-semibold text-gray-200">{CATEGORY_LABEL[cat] ?? cat}</h2>
                 <span className="rounded-full bg-gray-800 px-3 py-0.5 text-sm text-gray-500">
                   {catItems.length}
                 </span>
+                <select
+                  value={sort}
+                  onChange={e => setSorts(prev => ({ ...prev, [cat]: e.target.value as SortKey }))}
+                  className="ml-auto rounded-lg border border-gray-700 bg-gray-800 px-2 py-1 text-xs text-gray-400 focus:outline-none focus:border-gray-600"
+                >
+                  <option value="qty-hl">Qty: High → Low</option>
+                  <option value="qty-lh">Qty: Low → High</option>
+                  <option value="grade-hl">Grade: High → Low</option>
+                  <option value="grade-lh">Grade: Low → High</option>
+                </select>
               </div>
 
               {/* Item list */}
               <div className={inner}>
-                {[...catItems].sort((a, b) => getActualQty(b) - getActualQty(a)).map(item => {
+                {sortedItems.map(item => {
                   const qty     = getActualQty(item)
                   const isSaved = flash[item.item_id]
                   return (
