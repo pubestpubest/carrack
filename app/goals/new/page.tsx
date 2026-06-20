@@ -59,7 +59,8 @@ function NewGoalContent() {
         .in('name', ['Epheria Carrack: Advance', 'Epheria Carrack: Balance', 'Epheria Carrack: Valor', 'Epheria Carrack: Volante']),
     ]).then(([{ data: s }, { data: c }]) => {
       setStages(s ?? [])
-      setCarracks(c ?? [])
+      const ORDER = ['Epheria Carrack: Advance', 'Epheria Carrack: Balance', 'Epheria Carrack: Volante', 'Epheria Carrack: Valor']
+      setCarracks((c ?? []).sort((a, b) => ORDER.indexOf(a.name) - ORDER.indexOf(b.name)))
     })
   }, [goalType])
 
