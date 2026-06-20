@@ -37,9 +37,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${cinzel.variable} ${spectral.variable} ${niramit.variable}`}>
-      <body className={`${spectral.className} antialiased`}>
+      <body className={`${spectral.className} antialiased flex flex-col min-h-screen`}>
         <Nav />
-        <main className="min-h-screen">{children}</main>
+        <main className="flex-1">{children}</main>
+        <footer className="mt-8 border-t border-gray-800/60 py-4 text-center text-xs text-gray-700 tracking-widest uppercase">
+          Carrack Tracker&ensp;·&ensp;Alpha
+        </footer>
       </body>
     </html>
   )

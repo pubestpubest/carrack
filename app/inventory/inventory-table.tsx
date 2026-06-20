@@ -31,21 +31,21 @@ const CATEGORY_LABEL: Record<string, string> = {
   license:   'Licenses',
   currency:  'Currency',
 }
-// lg = 4-col grid. Wide cards for equipment & material; narrow for stone/license/currency
+// lg = 2-col grid. Equipment & material full-width; stone+license side-by-side; currency full-width
 const CATEGORY_SPAN: Record<string, string> = {
-  equipment: 'sm:col-span-2 lg:col-span-2',
-  material:  'sm:col-span-2 lg:col-span-2',
+  equipment: 'lg:col-span-2',
+  material:  'lg:col-span-2',
   stone:     'lg:col-span-1',
   license:   'lg:col-span-1',
-  currency:  'sm:col-span-2 lg:col-span-2',
+  currency:  'lg:col-span-2',
 }
-// Wide categories use 2-column item layout inside the card
+// Wide categories use multi-column item layout inside the card
 const INNER_GRID: Record<string, string> = {
-  equipment: 'grid grid-cols-1 xl:grid-cols-2 gap-x-4',
-  material:  'grid grid-cols-1 xl:grid-cols-2 gap-x-4',
-  stone:     '',
-  license:   '',
-  currency:  '',
+  equipment: 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
+  material:  'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
+  stone:     'grid grid-cols-1 gap-x-4',
+  license:   'grid grid-cols-1 gap-x-4',
+  currency:  'grid grid-cols-1 md:grid-cols-2 gap-x-4',
 }
 
 const CATEGORIES = ['equipment', 'material', 'stone', 'license', 'currency']
@@ -139,7 +139,7 @@ export default function InventoryBento({ items }: { items: ItemRow[] }) {
       </div>
 
       {/* Bento grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         {CATEGORY_ORDER.map(cat => {
           const catItems = grouped[cat] ?? []
           if (catItems.length === 0) return null
