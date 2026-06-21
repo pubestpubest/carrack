@@ -3,6 +3,7 @@ import { Cinzel, Spectral, Niramit } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/nav'
 import Tutorial from '@/app/components/tutorial'
+import SessionGather from '@/app/components/session-gather'
 
 const cinzel = Cinzel({
   subsets:  ['latin'],
@@ -42,8 +43,9 @@ export default function RootLayout({
         <Nav />
         <main className="flex-1">{children}</main>
         <footer className="mt-8 border-t border-gray-800/60 py-4 text-center text-xs text-gray-700 tracking-widest uppercase">
-          Carrack Tracker&ensp;·&ensp;Alpha 0.5
+          Carrack Tracker&ensp;·&ensp;Alpha 0.7
         </footer>
+        <SessionGather />
         <Tutorial />
       </body>
     </html>
