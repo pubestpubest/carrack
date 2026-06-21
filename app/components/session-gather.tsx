@@ -16,7 +16,10 @@ type Item = {
 }
 
 // One row in the active gathering session: the item + how much was gathered.
-type Line = { item: Item; gained: number }
+// `confidence` is set when the row came from a screenshot scan.
+type Line = { item: Item; gained: number; confidence?: number }
+
+type ScanCandidate = { item_id: number; qty: number; confidence: number }
 
 const GRADE_BG: Record<string, string> = {
   white: '#1f2937', green: '#14290d', blue: '#0c1a2e',
@@ -35,10 +38,24 @@ export default function SessionGather() {
 
   const [lines,   setLines]   = useState<Line[]>([])
   const [search,  setSearch]  = useState('')
-  const [saving,  setSaving]  = useState(false)
-  const [error,   setError]   = useState<string | null>(null)
-  const [authed,  setAuthed]  = useState(false)
+  const [saving,   setSaving]   = useState(false)
+  const [error,    setError]    = useState<string | null>(null)
+  const [authed,   setAuthed]   = useState(false)
+  const [scanning, setScanning] = useState(false)
+  const [scanNote, setScanNote] = useState<string | null>(null)
+  const [scanPreview, setScanPreview] = useState<string | null>(null) // object URL, session-only
+  const [showFull,    setShowFull]    = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
+  const fileRef   = useRef<HTMLInputElement>(null)
+  const scanUrlRef = useRef<string | null>(null)
+
+  // Swap the preview object URL, revoking the previous one to avoid leaks.
+  function setPreview(url: string | null) {
+    if (scanUrlRef.current) URL.revokeObjectURL(scanUrlRef.current)
+    scanUrlRef.current = url
+    setScanPreview(url)
+  }
+  useEffect(() => () => { if (scanUrlRef.current) URL.revokeObjectURL(scanUrlRef.current) }, [])
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -61,10 +78,12 @@ export default function SessionGather() {
       supabase.from('items').select('item_id, name, name_th, grade, category, tier, image_url').order('tier').order('name'),
       supabase.from('user_inventory').select('item_id, qty_have'),
     ])
-    setItems((its as Item[] | null) ?? [])
+    const list = (its as Item[] | null) ?? []
+    setItems(list)
     setHaveMap(new Map((inv ?? []).map(r => [r.item_id, r.qty_have])))
     setLoaded(true)
     setLoading(false)
+    return list
   }, [])
 
   function openPanel() {
@@ -106,6 +125,47 @@ export default function SessionGather() {
     searchRef.current?.focus()
   }
 
+  // Merge scanned candidates into the session lines (summing qty for repeats).
+  function mergeScanned(cands: ScanCandidate[], skipped: number, list: Item[]) {
+    setLines(prev => {
+      const map = new Map(prev.map(l => [l.item.item_id, { ...l }]))
+      for (const c of cands) {
+        const item = list.find(i => i.item_id === c.item_id)
+        if (!item) continue
+        const ex = map.get(c.item_id)
+        if (ex) ex.gained += c.qty
+        else map.set(c.item_id, { item, gained: c.qty, confidence: c.confidence })
+      }
+      return [...map.values()]
+    })
+    setScanNote(skipped > 0 ? `ข้าม ${skipped} ไอเทมที่ระบบไม่รู้จัก` : null)
+  }
+
+  async function onScanFile(file: File | undefined) {
+    if (!file) return
+    setScanning(true); setError(null); setScanNote(null)
+    setPreview(URL.createObjectURL(file)) // show what's being scanned
+    try {
+      const list = loaded ? items : await loadData()
+      const fd = new FormData()
+      fd.append('image', file)
+      const res = await fetch('/api/inventory/session/scan', { method: 'POST', body: fd })
+      const j = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(j?.error ?? 'สแกนภาพไม่สำเร็จ')
+      const cands: ScanCandidate[] = j?.candidates ?? []
+      if (cands.length === 0 && (j?.skipped ?? 0) === 0) {
+        setScanNote('ไม่พบไอเทมในภาพ ลองถ่าย/ครอบให้ตรงช่องเก็บของ')
+      } else {
+        mergeScanned(cands, j?.skipped ?? 0, list)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'สแกนภาพไม่สำเร็จ')
+    } finally {
+      setScanning(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
   function setGained(itemId: number, gained: number) {
     setLines(prev => prev.map(l =>
       l.item.item_id === itemId ? { ...l, gained: Math.max(0, gained) } : l,
@@ -127,6 +187,9 @@ export default function SessionGather() {
     setLines([])
     setSearch('')
     setError(null)
+    setScanNote(null)
+    setShowFull(false)
+    setPreview(null)
   }
 
   const totalGained = lines.reduce((s, l) => s + l.gained, 0)
@@ -225,6 +288,66 @@ export default function SessionGather() {
                 disabled={loading}
                 className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-2.5 text-sm outline-none placeholder:text-gray-600 focus:border-brass-dim"
               />
+              {/* Scan-from-screenshot */}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => onScanFile(e.target.files?.[0] ?? undefined)}
+              />
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={scanning}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-2 text-xs font-semibold font-thai transition-colors disabled:opacity-50"
+                style={{ borderColor: 'var(--brass-dim)', color: 'var(--brass-light)' }}
+              >
+                {scanning ? (
+                  <>
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brass-dim border-t-transparent" />
+                    กำลังอ่านภาพ…
+                  </>
+                ) : (
+                  <>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z" />
+                      <circle cx="12" cy="13" r="3.5" />
+                    </svg>
+                    สแกนจากภาพหน้าจอคลัง
+                  </>
+                )}
+              </button>
+              {scanNote && (
+                <p className="mt-2 text-[11px] text-amber-500/80 font-thai">{scanNote}</p>
+              )}
+
+              {/* Uploaded image preview — verify the scan against the source */}
+              {scanPreview && (
+                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-800 bg-gray-900/50 p-2">
+                  <button
+                    onClick={() => setShowFull(true)}
+                    className="relative shrink-0 overflow-hidden rounded-lg border border-gray-700 transition-transform hover:scale-[1.03]"
+                    title="ดูภาพเต็ม"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={scanPreview} alt="ภาพที่สแกน" className="h-14 w-14 object-cover" />
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white opacity-0 transition-opacity hover:opacity-100">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M14 10l7-7M9 21H3v-6M10 14l-7 7" /></svg>
+                    </span>
+                  </button>
+                  <p className="flex-1 text-[11px] leading-snug text-gray-500 font-thai">
+                    ภาพที่สแกน — แตะเพื่อดูเต็ม แล้วเทียบกับรายการด้านล่าง
+                  </p>
+                  <button
+                    onClick={() => setPreview(null)}
+                    className="shrink-0 rounded-md p-1 text-gray-600 hover:bg-gray-800 hover:text-gray-300"
+                    title="ซ่อนภาพ"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              )}
+
               {results.length > 0 && (
                 <div className="absolute left-5 right-5 top-full z-10 mt-1 max-h-72 overflow-y-auto rounded-xl border border-gray-800 bg-gray-950 shadow-xl">
                   {results.map(it => (
@@ -263,7 +386,7 @@ export default function SessionGather() {
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {lines.map(({ item, gained }) => {
+                  {lines.map(({ item, gained, confidence }) => {
                     const before = haveMap.get(item.item_id) ?? 0
                     const after  = before + gained
                     return (
@@ -282,7 +405,14 @@ export default function SessionGather() {
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className={`truncate text-sm font-medium font-thai grade-${item.grade}`}>{item.name_th ?? item.name}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className={`truncate text-sm font-medium font-thai grade-${item.grade}`}>{item.name_th ?? item.name}</p>
+                              {confidence != null && (
+                                <span className="shrink-0 rounded bg-brass-glow px-1 text-[9px] font-semibold text-brass-light" title="มาจากการสแกนภาพ">
+                                  สแกน {Math.round(confidence * 100)}%
+                                </span>
+                              )}
+                            </div>
                             <p className="truncate text-xs text-gray-600">{item.name}</p>
                           </div>
                           <button
@@ -362,6 +492,23 @@ export default function SessionGather() {
               </div>
             </div>
           </div>
+
+          {/* Full-image lightbox */}
+          {showFull && scanPreview && (
+            <div
+              className="absolute inset-0 z-[10002] flex items-center justify-center bg-black/85 p-6"
+              onClick={() => setShowFull(false)}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={scanPreview} alt="ภาพที่สแกน" className="max-h-full max-w-full rounded-lg shadow-2xl" />
+              <button
+                onClick={() => setShowFull(false)}
+                className="absolute right-4 top-4 rounded-lg border border-gray-600 bg-black/50 px-3 py-1.5 text-sm text-gray-200 hover:bg-black/70"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>,
         document.body,
       )}
