@@ -43,7 +43,7 @@ export default function RootLayout({
         <Nav />
         <main className="flex-1">{children}</main>
         <footer className="mt-8 border-t border-gray-800/60 py-4 text-center text-xs text-gray-700 tracking-widest uppercase">
-          Carrack Tracker&ensp;·&ensp;Alpha 0.8
+          Carrack Tracker&ensp;·&ensp;Alpha 0.9
         </footer>
         <SessionGather />
         <Tutorial />

@@ -11,6 +11,7 @@ type Step = {
   selector?:  string   // element to spotlight
   advanceOn?: string   // CSS selector — clicking ANY match advances (event delegation)
   hint?:      string   // amber hint shown when advanceOn is set
+  image?:     string   // demo image shown inside the card (e.g. a sample screenshot)
 }
 
 const STEPS: Step[] = [
@@ -79,12 +80,12 @@ const STEPS: Step[] = [
     selector: '[data-tour="inventory-table"]',
     hint:     'ลองกรอกจำนวนในช่อง',
   },
-  // ── 9b. Quick-record + image scan ────────────────────────────────────────────
+  // ── 9b. Quick-record + image scan (demo only) ────────────────────────────────
   {
-    title:    'บันทึกของที่หาได้แบบเร็ว 📸',
-    body:     'ปุ่มตะกร้ามุมขวาล่างใช้บันทึกของที่เพิ่งฟาร์มมาได้อย่างรวดเร็ว — เพิ่มเอง หรือกด "สแกนจากภาพหน้าจอคลัง" ให้ระบบอ่านชื่อไอเทมและจำนวนจากภาพให้อัตโนมัติ ตรวจสอบแล้วกดบันทึกเข้าคลังได้เลย',
-    selector: '[data-tour="session-gather"]',
-    hint:     'ปุ่มตะกร้ามุมขวาล่าง',
+    title: 'บันทึกของที่หาได้แบบเร็ว 📸',
+    body:  'ปุ่มตะกร้ามุมขวาล่างบันทึกของที่เพิ่งฟาร์มมาได้อย่างรวดเร็ว — เด็ดสุดคือกด "สแกนจากภาพหน้าจอคลัง" แล้วแนบภาพคลังแบบตัวอย่างนี้ ระบบจะอ่านชื่อไอเทมและจำนวนให้อัตโนมัติ ตรวจสอบแล้วกดบันทึกเข้าคลังได้เลย',
+    image: '/tutorial/session-scan-demo.png',
+    hint:  'ลองได้ทีหลังจากปุ่มตะกร้ามุมขวาล่าง',
   },
   // ── 10. Go to Catalogue ──────────────────────────────────────────────────────
   {
@@ -165,6 +166,14 @@ function Tooltip({
 
       <h3 className="mb-1.5 text-sm font-bold text-gray-100 font-thai">{step.title}</h3>
       <p  className="text-xs leading-relaxed text-gray-400 font-thai">{step.body}</p>
+
+      {/* Demo image */}
+      {step.image && (
+        <div className="mt-3 flex justify-center rounded-xl border border-gray-800 bg-black/40 p-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={step.image} alt="ตัวอย่างภาพหน้าจอคลัง" className="max-h-44 rounded-lg" />
+        </div>
+      )}
 
       {/* Interactive hint */}
       {step.hint && (
