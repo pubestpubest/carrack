@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
-const STORAGE_KEY = 'carrack-tutorial-done-v2'
+const STORAGE_KEY = 'carrack-tutorial-done-v3'
 
 type Step = {
   title:      string
@@ -78,6 +78,13 @@ const STEPS: Step[] = [
     body:     'กรอกตัวเลขในช่องของไอเทมที่มี ระบบบันทึกอัตโนมัติและ progress bar บนหน้า Goals จะอัพเดททันที ลองกรอกดูสักรายการ',
     selector: '[data-tour="inventory-table"]',
     hint:     'ลองกรอกจำนวนในช่อง',
+  },
+  // ── 9b. Quick-record + image scan ────────────────────────────────────────────
+  {
+    title:    'บันทึกของที่หาได้แบบเร็ว 📸',
+    body:     'ปุ่มตะกร้ามุมขวาล่างใช้บันทึกของที่เพิ่งฟาร์มมาได้อย่างรวดเร็ว — เพิ่มเอง หรือกด "สแกนจากภาพหน้าจอคลัง" ให้ระบบอ่านชื่อไอเทมและจำนวนจากภาพให้อัตโนมัติ ตรวจสอบแล้วกดบันทึกเข้าคลังได้เลย',
+    selector: '[data-tour="session-gather"]',
+    hint:     'ปุ่มตะกร้ามุมขวาล่าง',
   },
   // ── 10. Go to Catalogue ──────────────────────────────────────────────────────
   {

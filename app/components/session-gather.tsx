@@ -233,6 +233,7 @@ export default function SessionGather() {
       {/* Floating action button — stacked above the tutorial ? button */}
       <button
         onClick={openPanel}
+        data-tour="session-gather"
         title="บันทึกของที่หาได้ (Gathering session)"
         className="group fixed bottom-16 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-[0_4px_20px_rgba(200,168,75,0.35)] transition-transform hover:scale-105 active:scale-95"
         style={{
