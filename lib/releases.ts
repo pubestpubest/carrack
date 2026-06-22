@@ -12,6 +12,16 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.12',
+    tag:     'v0.12',
+    date:    '2026-06-22',
+    title:   'Ships get their own section',
+    notes: [
+      'Carracks and hull ships now live under a dedicated “Ships” section in the catalogue and inventory, instead of being mixed in with equipment.',
+      'Every catalogue section is now sorted by grade.',
+    ],
+  },
+  {
     version: 'Alpha 0.11',
     tag:     'v0.11',
     date:    '2026-06-22',

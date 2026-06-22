@@ -61,6 +61,10 @@ no longer true.
 
 ## Log
 
+- **2026-06-22** — Released **Alpha 0.12** (tag `v0.12`): moved the 4 Carrack vessels (81–84)
+  `equipment`→`ship` (migration `carracks_to_ship_category`); added a Ships section to inventory;
+  catalogue sections now sort by grade. goal-new now fetches ship targets in one
+  `category='ship' tier>=2` query (Carracks included), dropping the by-name Carrack query.
 - **2026-06-22** — Released **Alpha 0.11** (tag `v0.11`): ships feature changelog entry.
 - **2026-06-22** — Completed the ships feature: verified the committed code (`f35d390`),
   confirmed live schema, applied the Carrack→hull re-chaining (user-approved), added

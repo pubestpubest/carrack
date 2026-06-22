@@ -22,10 +22,21 @@ export default async function CataloguePage({
 
   const { data: items } = await query
 
+  const GRADE_RANK: Record<string, number> = { white: 0, green: 1, blue: 2, yellow: 3, orange: 4, red: 5 }
+  const SECTION_ORDER = ['ship', 'equipment', 'material', 'stone', 'license', 'currency']
+
   const grouped: Record<string, Tables<'items'>[]> = {}
   for (const item of items ?? []) {
     ;(grouped[item.category] ??= []).push(item)
   }
+  // Sort each section by grade (best first). Stable sort keeps the query's tier/name order as tiebreak.
+  for (const cat of Object.keys(grouped)) {
+    grouped[cat].sort((a, b) => (GRADE_RANK[b.grade] ?? 0) - (GRADE_RANK[a.grade] ?? 0))
+  }
+  const sections = [
+    ...SECTION_ORDER.filter(c => grouped[c]?.length),
+    ...Object.keys(grouped).filter(c => !SECTION_ORDER.includes(c)),
+  ]
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
@@ -45,7 +56,9 @@ export default async function CataloguePage({
         <Link href="/catalogue" className="rounded border border-gray-700 px-4 py-2.5 text-base hover:border-gray-500">Reset</Link>
       </form>
 
-      {Object.entries(grouped).map(([cat, catItems]) => (
+      {sections.map(cat => {
+        const catItems = grouped[cat]
+        return (
         <section key={cat} className="mb-10" {...(cat === 'equipment' ? { 'data-tour': 'catalogue-equipment' } : {})}>
           <h2 className="mb-4 text-base font-semibold uppercase tracking-wider text-gray-500 capitalize">
             {cat} ({catItems.length})
@@ -84,7 +97,8 @@ export default async function CataloguePage({
             })}
           </div>
         </section>
-      ))}
+        )
+      })}
 
       {(items ?? []).length === 0 && (
         <p className="py-12 text-center text-sm text-gray-500">No items found.</p>

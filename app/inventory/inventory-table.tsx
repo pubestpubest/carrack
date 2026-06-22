@@ -23,16 +23,18 @@ const GRADE_PLACEHOLDER: Record<string, string> = {
   red:    '#2a0a0a',
 }
 
-const CATEGORY_ORDER   = ['equipment', 'material', 'stone', 'license'] as const
+const CATEGORY_ORDER   = ['ship', 'equipment', 'material', 'stone', 'license'] as const
 const CATEGORY_LABEL: Record<string, string> = {
+  ship:      'Ships',
   equipment: 'Ship Equipment',
   material:  'Materials',
   stone:     'Enhancement Stones',
   license:   'Licenses',
   currency:  'Currency',
 }
-// lg = 2-col grid. Equipment & material full-width; stone+license side-by-side; currency full-width
+// lg = 2-col grid. Ships/equipment/material full-width; stone+license side-by-side; currency full-width
 const CATEGORY_SPAN: Record<string, string> = {
+  ship:      'lg:col-span-2',
   equipment: 'lg:col-span-2',
   material:  'lg:col-span-2',
   stone:     'lg:col-span-1',
@@ -41,6 +43,7 @@ const CATEGORY_SPAN: Record<string, string> = {
 }
 // Wide categories use multi-column item layout inside the card
 const INNER_GRID: Record<string, string> = {
+  ship:      'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
   equipment: 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
   material:  'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4',
   stone:     'grid grid-cols-1 gap-x-4',
@@ -48,7 +51,7 @@ const INNER_GRID: Record<string, string> = {
   currency:  'grid grid-cols-1 md:grid-cols-2 gap-x-4',
 }
 
-const CATEGORIES = ['equipment', 'material', 'stone', 'license']
+const CATEGORIES = ['ship', 'equipment', 'material', 'stone', 'license']
 
 const GRADE_RANK: Record<string, number> = {
   white: 0, green: 1, blue: 2, yellow: 3, orange: 4, red: 5,

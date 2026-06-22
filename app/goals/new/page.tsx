@@ -8,8 +8,6 @@ type ShipStage   = { stage_id: number; ship_name: string; stage_order: number; v
 type CarrackItem = { item_id: number; name: string; name_th: string | null; grade: string; tier: number; category: string }
 type EquipItem   = { item_id: number; name: string; name_th: string | null; grade: string; image_url: string | null }
 
-const CARRACK_NAMES = ['Epheria Carrack: Advance', 'Epheria Carrack: Balance', 'Epheria Carrack: Valor', 'Epheria Carrack: Volante']
-
 const CARRACK_DESCRIPTIONS: Record<string, { focus: string; detail: string }> = {
   advance:  { focus: 'Cargo / Barter',   detail: 'Max inventory & weight limit — best for bartering' },
   balance:  { focus: 'All-rounder',      detail: 'Balanced stats across all categories' },
@@ -68,11 +66,11 @@ function NewGoalContent() {
     const supabase = createClient()
     Promise.all([
       supabase.from('ship_stages').select('*').order('stage_order'),
+      // Buildable ship targets: hulls (T2–T3) + Carracks (T4), all category 'ship'.
       supabase.from('items').select('item_id, name, name_th, grade, tier, category').eq('category', 'ship').gte('tier', 2),
-      supabase.from('items').select('item_id, name, name_th, grade, tier, category').in('name', CARRACK_NAMES),
-    ]).then(([{ data: s }, { data: hulls }, { data: carrackItems }]) => {
+    ]).then(([{ data: s }, { data: ships }]) => {
       setStages(s ?? [])
-      const all = [...((hulls ?? []) as CarrackItem[]), ...((carrackItems ?? []) as CarrackItem[])]
+      const all = ((ships ?? []) as CarrackItem[]).slice()
       all.sort((a, b) => a.tier - b.tier || a.item_id - b.item_id)
       setCarracks(all)
     })
