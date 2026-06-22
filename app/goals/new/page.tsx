@@ -16,16 +16,17 @@ const CARRACK_DESCRIPTIONS: Record<string, { focus: string; detail: string }> = 
 }
 
 // Which current-ship variants are valid starting points for a given target ship.
-// Progression: none → base hull → modified hull → T3 ship → Carrack.
+// Critical path is direct: none → base hull (T2) → upgraded ship (T3) → Carrack (T4).
+// The "(Modified)" ships are an optional side-branch, NOT on the path to a T3/Carrack,
+// so they aren't offered as start points there.
 function allowedCurrentVariants(name: string): string[] {
   const n     = name.toLowerCase()
   const gline = /frigate|galleass|valor|volante/.test(n)
   const t2    = gline ? 'frigate' : 'sailboat'
-  const t2mod = gline ? 'frigate_modified' : 'sailboat_modified'
   const t3    = gline ? 'galleass' : 'caravel'
-  if (/advance|balance|valor|volante/.test(n)) return ['none', t2, t2mod, t3] // T4 Carrack
-  if ((n.includes('caravel') || n.includes('galleass')))  return ['none', t2, t2mod] // T3
-  if (n.includes('modified'))                              return ['none', t2] // T2.5 modified hull
+  if (/advance|balance|valor|volante/.test(n)) return ['none', t2, t3] // T4 Carrack
+  if (n.includes('caravel') || n.includes('galleass'))    return ['none', t2] // T3 ship
+  if (n.includes('modified'))                             return ['none', t2] // optional Modified ship goal
   return ['none'] // T2 base hull
 }
 

@@ -61,6 +61,14 @@ no longer true.
 
 ## Log
 
+- **2026-06-22** — Released **Alpha 0.15** (tag `v0.15`): corrected the ship build path — T3 ships
+  build DIRECTLY from the base hull (migration `t3_ships_build_from_base_hull`: recipe 22 ship
+  ingredient 89→87 Caravel←Sailboat, recipe 23 90→88 Galleass←Frigate). The "(Modified)" ships
+  (T2.5) are an OPTIONAL side-branch, NOT required for a T3/Carrack — so `allowedCurrentVariants`
+  no longer offers them as start points (reverting the misdiagnosed Alpha 0.13 addition). The
+  Alpha 0.13 modified `ship_stages` (10/11) + items remain as optional ships; 0 goals reference them.
+  Lesson: the build path is T1→T2→T3→T4 with an optional T2→T2.5→T3; trust the user's progression
+  table over the doc's prose. `scripts/ship-gap-test.ts` rewritten for the direct model (14 checks).
 - **2026-06-22** — Released **Alpha 0.14** (tag `v0.14`): `/goals` is now a management list of
   ALL goals (active + paused, both types) via `app/goals/goals-list.tsx`; added `PATCH /api/goals/[id]`
   enforcing one active goal per type (ship = `current_stage_id` not null) — activating/creating

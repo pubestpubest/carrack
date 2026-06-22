@@ -84,7 +84,7 @@
 | Mayna Cannon (+10, blue) | 1 | durability เต็ม |
 | Stratus Wind Sail (+10, blue) | 1 | durability เต็ม |
 
-> "Epheria Caravel" เองมาจาก Epheria Sailboat → Improved Sailboat → Caravel ระบบจะไล่สูตรลงไปจนสุด แล้วสรุปว่า "ถ้าเริ่มจากศูนย์" ต้องเตรียมอะไรทั้งหมด
+> "Epheria Caravel" เองมาจาก Epheria Sailboat → Caravel โดยตรง (สาย Galleass ก็ Frigate → Galleass โดยตรง) เรือเวอร์ชัน "ดัดแปลง (Modified)" เป็นทางเลือกเสริม ไม่ได้อยู่บนเส้นทางหลัก ระบบจะไล่สูตรลงไปจนสุด แล้วสรุปว่า "ถ้าเริ่มจากศูนย์" ต้องเตรียมอะไรทั้งหมด
 
 ### 5.2 คาแรค 4 แบบ และจุดเด่น
 

@@ -1,4 +1,6 @@
-// Verify computeGapTree's hull-chain expansion + stopAtItemId truncation against LIVE catalogue data.
+// Verify computeGapTree against LIVE catalogue data, post "T3 builds from base hull" fix.
+// Critical path is direct: Caravel <- Epheria Sailboat, Galleass <- Epheria Frigate.
+// The "(Modified)" ships are an optional side-branch and must NOT appear as required.
 // Run: export $(grep -v '^#' .env.local | xargs) && npx tsx scripts/ship-gap-test.ts
 import { createClient } from '@supabase/supabase-js'
 import { computeGapTree, type GapTreeRow } from '../lib/gap-analysis'
@@ -13,6 +15,9 @@ function findInTree(rows: GapTreeRow[], itemId: number): boolean {
   return false
 }
 
+const CARAVEL = 91, GALLEASS = 92, SAILBOAT = 87, FRIGATE = 88, BATALI = 86
+const SAILBOAT_MOD = 89, FRIGATE_MOD = 90, BALANCE = 82, VOLANTE = 84
+
 async function main() {
   const [{ data: recipes }, { data: ingredients }, { data: items }] = await Promise.all([
     sb.from('recipes').select('recipe_id, output_item_id, output_qty'),
@@ -21,65 +26,52 @@ async function main() {
   ])
   if (!recipes || !ingredients || !items) throw new Error('catalogue fetch failed (RLS? env?)')
 
-  const CARAVEL = 91, SAILBOAT_MOD = 89, SAILBOAT = 87, BATALI = 86
   const base = { recipes, ingredients, inventory: [] as { item_id: number; qty_have: number }[], itemMeta: items }
+  const tree = (targetItemId: number, stopAtItemId: number | null) =>
+    computeGapTree({ targetItemId, targetQty: 1, ...base, stopAtItemId })
 
-  // A) No current ship → full hull chain expands down to Batali (86).
-  const noStop = computeGapTree({ targetItemId: CARAVEL, targetQty: 1, ...base, stopAtItemId: null })
-  const modRow = noStop.find(r => r.itemId === SAILBOAT_MOD)
-  const a1 = !!modRow                                  // Sailboat(Mod) is a direct ingredient of Caravel
-  // subRows flatten the sub-recipe to raw leaves; the build chain reaches Batali (86), the chain root.
-  const a2 = !!modRow && modRow.subRows.some(s => s.itemId === BATALI)
-  const a3 = findInTree(noStop, BATALI)               // chain reaches Batali somewhere
+  // A) Caravel from scratch → built directly from Epheria Sailboat; Modified Sailboat NOT required.
+  const caravel = tree(CARAVEL, null)
+  const sailRow = caravel.find(r => r.itemId === SAILBOAT)
+  const a1 = !!sailRow                                       // Sailboat is a direct ingredient of Caravel
+  const a2 = !!sailRow && sailRow.subRows.some(s => s.itemId === BATALI) // its chain reaches Batali
+  const a3 = !findInTree(caravel, SAILBOAT_MOD)             // optional Modified Sailboat not on the path
 
-  // B) Own Sailboat(Modified) → that branch is satisfied, not expanded.
-  const stopMod = computeGapTree({ targetItemId: CARAVEL, targetQty: 1, ...base, stopAtItemId: SAILBOAT_MOD })
-  const modRow2 = stopMod.find(r => r.itemId === SAILBOAT_MOD)
-  const b1 = !!modRow2 && modRow2.missing === 0       // owned → nothing missing
-  const b2 = !!modRow2 && modRow2.subRows.length === 0 // not expanded
-  const b3 = !findInTree(stopMod, SAILBOAT)           // predecessor no longer appears
+  // B) Own an Epheria Sailboat → satisfied, chain pruned.
+  const caravelStop = tree(CARAVEL, SAILBOAT)
+  const sailRow2 = caravelStop.find(r => r.itemId === SAILBOAT)
+  const b1 = !!sailRow2 && sailRow2.missing === 0
+  const b2 = !!sailRow2 && sailRow2.subRows.length === 0
+  const b3 = !findInTree(caravelStop, BATALI)
 
-  // C) Own only Epheria Sailboat → chain truncates there, Batali no longer needed.
-  const stopSail = computeGapTree({ targetItemId: CARAVEL, targetQty: 1, ...base, stopAtItemId: SAILBOAT })
-  const c1 = findInTree(stopSail, SAILBOAT)           // truncation point still listed
-  const c2 = !findInTree(stopSail, BATALI)            // below it pruned
+  // C) Galleass, current ship = plain Frigate (the reported case): Frigate satisfies it directly,
+  //    and the Modified Frigate must NOT appear as needed anymore.
+  const galleassFromFrig = tree(GALLEASS, FRIGATE)
+  const frigRow = galleassFromFrig.find(r => r.itemId === FRIGATE)
+  const c1 = !!frigRow && frigRow.missing === 0             // owned Frigate satisfies the hull
+  const c2 = !!frigRow && frigRow.subRows.length === 0      // not expanded
+  const c3 = !findInTree(galleassFromFrig, FRIGATE_MOD)     // <-- the fix: no Modified Frigate required
 
-  // D) Balance Carrack, no current ship → needs the Caravel hull, build path expands. (mirrors live goal 13)
-  const BALANCE = 82, VOLANTE = 84, GALLEASS = 92
-  const balanceNoStop = computeGapTree({ targetItemId: BALANCE, targetQty: 1, ...base, stopAtItemId: null })
-  const caravelRow = balanceNoStop.find(r => r.itemId === CARAVEL)
-  const d1 = !!caravelRow                                     // Caravel is now a direct ingredient of Balance
-  const d2 = !!caravelRow && caravelRow.subRows.length > 0    // its build path expands
-  const d3 = !!caravelRow && caravelRow.missing > 0           // not yet owned → counted as needed
+  // D) Galleass from scratch → built directly from Frigate; Modified Frigate NOT required.
+  const galleass = tree(GALLEASS, null)
+  const gFrig = galleass.find(r => r.itemId === FRIGATE)
+  const d1 = !!gFrig                                        // Frigate is a direct ingredient of Galleass
+  const d2 = !!gFrig && gFrig.subRows.some(s => s.itemId === BATALI)
+  const d3 = !findInTree(galleass, FRIGATE_MOD)
 
-  // E) Volante Carrack, current ship = Galleass → hull satisfied, not expanded. (mirrors live goals 8/16/17)
-  const volanteOwnHull = computeGapTree({ targetItemId: VOLANTE, targetQty: 1, ...base, stopAtItemId: GALLEASS })
-  const galleassRow = volanteOwnHull.find(r => r.itemId === GALLEASS)
-  const e1 = !!galleassRow && galleassRow.missing === 0       // owned → satisfied
-  const e2 = !!galleassRow && galleassRow.subRows.length === 0 // not expanded
-
-  // F) Galleass goal: start from a Modified Frigate you own → it's satisfied, its chain pruned.
-  const FRIGATE_MOD = 90, FRIGATE = 88
-  const galleassStopMod = computeGapTree({ targetItemId: GALLEASS, targetQty: 1, ...base, stopAtItemId: FRIGATE_MOD })
-  const fmodRow = galleassStopMod.find(r => r.itemId === FRIGATE_MOD)
-  const f1 = !!fmodRow && fmodRow.missing === 0          // owned Modified Frigate → satisfied
-  const f2 = !!fmodRow && fmodRow.subRows.length === 0   // not expanded
-  const f3 = !findInTree(galleassStopMod, FRIGATE)       // plain Frigate not pulled in below it
-
-  // G) Galleass goal: start from a plain Frigate → Modified Frigate is still required (the reported case).
-  const galleassStopFrig = computeGapTree({ targetItemId: GALLEASS, targetQty: 1, ...base, stopAtItemId: FRIGATE })
-  const fmodRow2 = galleassStopFrig.find(r => r.itemId === FRIGATE_MOD)
-  const g1 = !!fmodRow2 && fmodRow2.missing > 0          // must still modify the frigate
-  const g2 = !!fmodRow2 && fmodRow2.subRows.length > 0   // its build path shows
+  // E) Carrack still consumes its T3 hull (unaffected by the fix).
+  const balance = tree(BALANCE, null)
+  const e1 = !!balance.find(r => r.itemId === CARAVEL && r.missing > 0)  // Balance Carrack needs a Caravel
+  const volante = tree(VOLANTE, GALLEASS)
+  const galRow = volante.find(r => r.itemId === GALLEASS)
+  const e2 = !!galRow && galRow.missing === 0 && galRow.subRows.length === 0 // owned Galleass satisfies it
 
   const checks: [string, boolean][] = [
-    ['A1 Caravel needs Sailboat(Mod)', a1], ['A2 Sailboat(Mod) chain expands', a2], ['A3 chain reaches Batali', a3],
-    ['B1 owned Sailboat(Mod) missing=0', b1], ['B2 owned branch not expanded', b2], ['B3 Sailboat pruned', b3],
-    ['C1 Sailboat is truncation point', c1], ['C2 Batali pruned below it', c2],
-    ['D1 Balance Carrack needs Caravel hull', d1], ['D2 Caravel build path expands', d2], ['D3 Caravel counted as needed', d3],
-    ['E1 owned Galleass hull missing=0', e1], ['E2 owned hull not expanded', e2],
-    ['F1 owned Frigate(Mod) missing=0', f1], ['F2 owned Frigate(Mod) not expanded', f2], ['F3 plain Frigate pruned', f3],
-    ['G1 from plain Frigate, Frigate(Mod) still needed', g1], ['G2 Frigate(Mod) build path shows', g2],
+    ['A1 Caravel built from Sailboat', a1], ['A2 Sailboat chain reaches Batali', a2], ['A3 Modified Sailboat not required', a3],
+    ['B1 owned Sailboat missing=0', b1], ['B2 owned Sailboat not expanded', b2], ['B3 Batali pruned', b3],
+    ['C1 Galleass from Frigate: hull satisfied', c1], ['C2 Frigate not expanded', c2], ['C3 NO Modified Frigate required', c3],
+    ['D1 Galleass built from Frigate', d1], ['D2 Frigate chain reaches Batali', d2], ['D3 Modified Frigate not required', d3],
+    ['E1 Balance Carrack needs Caravel hull', e1], ['E2 owned Galleass hull satisfied', e2],
   ]
   let ok = true
   for (const [label, pass] of checks) { console.log(`${pass ? 'PASS' : 'FAIL'}  ${label}`); ok = ok && pass }

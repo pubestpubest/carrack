@@ -12,6 +12,16 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.15',
+    tag:     'v0.15',
+    date:    '2026-06-22',
+    title:   'Direct ship upgrade path',
+    notes: [
+      'Fixed the upgrade path: a Caravel is built directly from an Epheria Sailboat and a Galleass directly from an Epheria Frigate — no longer forcing the optional "Modified" ships as a required step.',
+      'So when you start a Galleass goal from a Frigate you already own, it no longer asks you to build a Modified Frigate first.',
+    ],
+  },
+  {
     version: 'Alpha 0.14',
     tag:     'v0.14',
     date:    '2026-06-22',
