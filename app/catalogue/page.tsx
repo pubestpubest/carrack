@@ -35,7 +35,7 @@ export default async function CataloguePage({
         <input name="q" defaultValue={q} placeholder="Search…" className="flex-1 rounded border border-gray-700 bg-gray-800 px-4 py-2.5 text-base" />
         <select name="category" defaultValue={category ?? ''} className="rounded border border-gray-700 bg-gray-800 px-4 py-2.5 text-base">
           <option value="">All categories</option>
-          {['equipment','material','stone','license','currency'].map(c => <option key={c} value={c}>{c}</option>)}
+          {['ship','equipment','material','stone','license','currency'].map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select name="grade" defaultValue={grade ?? ''} className="rounded border border-gray-700 bg-gray-800 px-4 py-2.5 text-base">
           <option value="">All grades</option>

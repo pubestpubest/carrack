@@ -25,32 +25,43 @@ type NodeDef = {
   isCarrack?: boolean
 }
 
+// Tiers (vertical rows): T1 Batali → T2 Sailboat/Frigate → T2.5 Modified →
+// T3 Caravel/Galleass → T4 Carracks. The modified ships are an OPTIONAL detour:
+// T2 reaches T3 directly, or via T2.5.
 const NODES: NodeDef[] = [
-  { id: 'batali',       name: 'Batali Sailboat',      nameTh: 'เรือสำเภาบาทิลลี่',           desc: 'Base starting ship',   cx: 555, y: 16   },
-  { id: 'sailboat',     name: 'Epheria Sailboat',      nameTh: 'เรือสำเภาเอเฟเรีย',           desc: 'Bartering speed',      cx: 232, y: 178  },
-  { id: 'frigate',      name: 'Epheria Frigate',       nameTh: 'เรือฟริเกตเอเฟเรีย',          desc: 'Sea combat speed',     cx: 878, y: 178  },
-  { id: 'sailboat_mod', name: 'Sailboat (Modified)',   nameTh: 'เรือสำเภาเอเฟเรียดัดแปลง',   desc: '+Solo cannon skill',   cx: 82,  y: 342, isLeaf: true },
-  { id: 'caravel',      name: 'Epheria Caravel',       nameTh: 'เรือการค้าเอเฟเรีย',          desc: 'Bartering path',       cx: 340, y: 342  },
-  { id: 'galleass',     name: 'Epheria Galleass',      nameTh: 'เรือแกลลีย์เอเฟเรีย',         desc: 'Combat path',          cx: 770, y: 342  },
-  { id: 'frigate_mod',  name: 'Frigate (Modified)',    nameTh: 'เรือฟริเกตเอเฟเรียดัดแปลง',  desc: '+Solo cannon skill',   cx: 1028, y: 342, isLeaf: true },
-  { id: 'advance',      name: 'Carrack: Advance',      nameTh: 'คาร์แร็ค : ทนทาน',            desc: 'Max cargo & barter',   cx: 186, y: 506, isCarrack: true },
-  { id: 'balance',      name: 'Carrack: Balance',      nameTh: 'คาร์แร็ค : สมดุล',             desc: 'All-round balanced',   cx: 448, y: 506, isCarrack: true },
-  { id: 'valor',        name: 'Carrack: Valor',        nameTh: 'คาร์แร็ค : ฉุกเฉิน',          desc: 'Max cannon damage',    cx: 662, y: 506, isCarrack: true },
-  { id: 'volante',      name: 'Carrack: Volante',      nameTh: 'คาร์แร็ค : แข็งแกร่ง',        desc: 'Max travel speed',     cx: 924, y: 506, isCarrack: true },
+  { id: 'batali',       name: 'Batali Sailboat',      nameTh: 'เรือสำเภาบาทิลลี่',           desc: 'Base ship · T1',       cx: 555, y: 16   },
+  { id: 'sailboat',     name: 'Epheria Sailboat',      nameTh: 'เรือสำเภาเอเฟเรีย',           desc: 'Bartering · T2',       cx: 300, y: 178  },
+  { id: 'frigate',      name: 'Epheria Frigate',       nameTh: 'เรือฟริเกตเอเฟเรีย',          desc: 'Sea combat · T2',      cx: 810, y: 178  },
+  { id: 'sailboat_mod', name: 'Sailboat (Modified)',   nameTh: 'เรือสำเภาเอเฟเรียดัดแปลง',   desc: 'Optional · solo cannon', cx: 150,  y: 340 },
+  { id: 'frigate_mod',  name: 'Frigate (Modified)',    nameTh: 'เรือฟริเกตเอเฟเรียดัดแปลง',  desc: 'Optional · solo cannon', cx: 960, y: 340 },
+  { id: 'caravel',      name: 'Epheria Caravel',       nameTh: 'เรือการค้าเอเฟเรีย',          desc: 'Bartering · T3',       cx: 330, y: 502  },
+  { id: 'galleass',     name: 'Epheria Galleass',      nameTh: 'เรือแกลลีย์เอเฟเรีย',         desc: 'Combat · T3',          cx: 780, y: 502  },
+  { id: 'advance',      name: 'Carrack: Advance',      nameTh: 'คาร์แร็ค : ทนทาน',            desc: 'Max cargo & barter',   cx: 228, y: 664, isCarrack: true },
+  { id: 'balance',      name: 'Carrack: Balance',      nameTh: 'คาร์แร็ค : สมดุล',             desc: 'All-round balanced',   cx: 432, y: 664, isCarrack: true },
+  { id: 'valor',        name: 'Carrack: Valor',        nameTh: 'คาร์แร็ค : ฉุกเฉิน',          desc: 'Max cannon damage',    cx: 678, y: 664, isCarrack: true },
+  { id: 'volante',      name: 'Carrack: Volante',      nameTh: 'คาร์แร็ค : แข็งแกร่ง',        desc: 'Max travel speed',     cx: 882, y: 664, isCarrack: true },
 ]
 
 const EDGES: [NodeId, NodeId][] = [
-  ['batali',   'sailboat'],
-  ['batali',   'frigate'],
-  ['sailboat', 'sailboat_mod'],
-  ['sailboat', 'caravel'],
-  ['frigate',  'galleass'],
-  ['frigate',  'frigate_mod'],
-  ['caravel',  'advance'],
-  ['caravel',  'balance'],
-  ['galleass', 'valor'],
-  ['galleass', 'volante'],
+  ['batali',       'sailboat'],
+  ['batali',       'frigate'],
+  ['sailboat',     'caravel'],       // direct T2 → T3
+  ['sailboat',     'sailboat_mod'],  // optional detour T2 → T2.5
+  ['sailboat_mod', 'caravel'],       // optional detour T2.5 → T3
+  ['frigate',      'galleass'],      // direct T2 → T3
+  ['frigate',      'frigate_mod'],   // optional detour
+  ['frigate_mod',  'galleass'],      // optional detour
+  ['caravel',      'advance'],
+  ['caravel',      'balance'],
+  ['galleass',     'valor'],
+  ['galleass',     'volante'],
 ]
+
+// The T2.5 detour edges — drawn dashed/dimmed to read as an alternate route.
+const OPTIONAL_EDGES = new Set<string>([
+  'sailboat|sailboat_mod', 'sailboat_mod|caravel',
+  'frigate|frigate_mod',   'frigate_mod|galleass',
+])
 
 const FULL_PATHS: Partial<Record<NodeId, NodeId[]>> = {
   advance: ['batali', 'sailboat', 'caravel', 'advance'],
@@ -71,9 +82,22 @@ const VARIANT_TO_NODE: Record<string, NodeId> = {
   volante:  'volante',
 }
 
+// Ship card images live in /images/items. Filenames are by visual resemblance;
+// the mapping is keyed to the true node identity (confirmed by each card caption).
+const SHIP_IMAGE: Record<string, string> = {
+  batali:       'batali.png',
+  sailboat:     'sailboat.png',
+  frigate:      'frigate.png',
+  sailboat_mod: 'modified-caraval.png',  // = เรือสำเภาเอเฟเรียดัดแปลง (Modified Sailboat)
+  caravel:      'caraval.png',
+  galleass:     'galleass.png',
+  frigate_mod:  'modified-galleass.png', // = เรือฟริเกตเอเฟเรียดัดแปลง (Modified Frigate)
+}
+
 function getImagePath(node: NodeDef): string {
   if (node.isCarrack) return `/images/items/epheria-carrack-${node.id}.png`
-  return `/images/ships/${node.id}.webp`
+  const file = SHIP_IMAGE[node.id]
+  return file ? `/images/items/${file}` : ''
 }
 
 // ─── Ship placeholder icon ────────────────────────────────────────────────────
@@ -111,9 +135,10 @@ export default function ShipTree({
 
   useEffect(() => {
     for (const node of NODES) {
-      if (node.isLeaf) continue
+      const src = getImagePath(node)
+      if (!src) continue
       const img = new window.Image()
-      img.src = getImagePath(node)
+      img.src = src
       img.onload = () => setLoadedImages(prev => new Set([...prev, node.id]))
     }
   }, [])
@@ -192,7 +217,7 @@ export default function ShipTree({
       {/* SVG Tree */}
       <div className="overflow-x-auto rounded-2xl border border-gray-800 bg-[#0d1117] p-2">
         <svg
-          viewBox="0 0 1110 670"
+          viewBox="0 0 1110 868"
           className="w-full min-w-[760px]"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -221,8 +246,9 @@ export default function ShipTree({
             const to   = nodeMap.get(toId)!
             const key  = `${fromId}|${toId}`
             const doneKey = `done|${key}`
-            const isActive = activeEdgeSet.has(key)
-            const isDone   = activeEdgeSet.has(doneKey)
+            const isActive   = activeEdgeSet.has(key)
+            const isDone     = activeEdgeSet.has(doneKey)
+            const isOptional = OPTIONAL_EDGES.has(key)
 
             const x1 = from.cx
             const y1 = from.y + NH
@@ -237,7 +263,8 @@ export default function ShipTree({
                 fill="none"
                 stroke={isActive ? '#3b82f6' : isDone ? '#d4a84388' : '#2d3748'}
                 strokeWidth={isActive ? 3 : isDone ? 2 : 1.5}
-                opacity={to.isLeaf ? 0.3 : 1}
+                strokeDasharray={isOptional && !isActive && !isDone ? '5 4' : undefined}
+                opacity={isOptional ? 0.6 : 1}
               />
             )
           })}
@@ -340,7 +367,7 @@ export default function ShipTree({
           })}
 
           {/* Legend */}
-          <g transform="translate(0, 638)">
+          <g transform="translate(0, 838)">
             <circle cx={16} cy={9} r={6} fill="#d4a843" opacity={0.8} />
             <text x={28} y={13} fontSize={10} fill="#6b7280">Current ship</text>
             <circle cx={125} cy={9} r={6} fill="#3b82f6" opacity={0.8} />
@@ -349,6 +376,8 @@ export default function ShipTree({
             <text x={258} y={13} fontSize={10} fill="#6b7280">Upgrade path</text>
             <line x1={358} y1={9} x2={382} y2={9} stroke="#2d3748" strokeWidth={1.5} />
             <text x={388} y={13} fontSize={10} fill="#6b7280">Other paths</text>
+            <line x1={480} y1={9} x2={504} y2={9} stroke="#2d3748" strokeWidth={1.5} strokeDasharray="5 4" opacity={0.6} />
+            <text x={510} y={13} fontSize={10} fill="#6b7280">Optional step</text>
           </g>
         </svg>
       </div>

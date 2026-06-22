@@ -60,8 +60,15 @@ function expand(
   visited:         Set<number>,
   stopAtEquipment = false,
   depth           = 0,
+  stopAtItemId:    number | null = null,
 ): Map<number, number> {
   if (visited.has(itemId)) return new Map([[itemId, qty]])
+
+  // Stop the hull chain at the user's current ship (it's already owned),
+  // so we never recompute a ship they already have.
+  if (stopAtItemId != null && depth > 0 && itemId === stopAtItemId) {
+    return new Map([[itemId, qty]])
+  }
 
   // Stop expanding equipment sub-ingredients (but always expand the root target)
   if (stopAtEquipment && depth > 0 && metaMap.get(itemId)?.category === 'equipment') {
@@ -79,7 +86,7 @@ function expand(
   const children = ingredientMap.get(recipe.recipeId) ?? []
 
   for (const ing of children) {
-    const sub = expand(ing.itemId, ing.qty * batches, recipeMap, ingredientMap, metaMap, next, stopAtEquipment, depth + 1)
+    const sub = expand(ing.itemId, ing.qty * batches, recipeMap, ingredientMap, metaMap, next, stopAtEquipment, depth + 1, stopAtItemId)
     for (const [id, n] of sub) {
       result.set(id, (result.get(id) ?? 0) + n)
     }
@@ -190,11 +197,13 @@ export function computeGap(params: {
   ingredients:   { recipe_id: number; item_id: number; qty: number }[]
   inventory:     { item_id: number; qty_have: number }[]
   itemMeta:      ItemMetaInput[]
+  stopAtItemId?: number | null  // current ship hull — treated as owned, not expanded
 }): GapRow[] {
-  const { targetItemId, targetQty, recipes, ingredients, inventory, itemMeta } = params
+  const { targetItemId, targetQty, recipes, ingredients, inventory, itemMeta, stopAtItemId = null } = params
   const { recipeMap, ingredientMap, inventoryMap, metaMap } = buildMaps(recipes, ingredients, inventory, itemMeta)
+  if (stopAtItemId != null) inventoryMap.set(stopAtItemId, Math.max(inventoryMap.get(stopAtItemId) ?? 0, targetQty))
 
-  const rawNeeds = expand(targetItemId, targetQty, recipeMap, ingredientMap, metaMap, new Set(), true)
+  const rawNeeds = expand(targetItemId, targetQty, recipeMap, ingredientMap, metaMap, new Set(), true, 0, stopAtItemId)
 
   const rows: GapRow[] = []
   for (const [id, needed] of rawNeeds) {
@@ -219,9 +228,11 @@ export function computeGapTree(params: {
   ingredients:  { recipe_id: number; item_id: number; qty: number }[]
   inventory:    { item_id: number; qty_have: number }[]
   itemMeta:     ItemMetaInput[]
+  stopAtItemId?: number | null  // current ship hull — treated as owned, not expanded
 }): GapTreeRow[] {
-  const { targetItemId, targetQty, recipes, ingredients, inventory, itemMeta } = params
+  const { targetItemId, targetQty, recipes, ingredients, inventory, itemMeta, stopAtItemId = null } = params
   const { recipeMap, ingredientMap, inventoryMap, metaMap } = buildMaps(recipes, ingredients, inventory, itemMeta)
+  if (stopAtItemId != null) inventoryMap.set(stopAtItemId, Math.max(inventoryMap.get(stopAtItemId) ?? 0, targetQty))
 
   const targetRecipe = recipeMap.get(targetItemId)
   if (!targetRecipe) {
@@ -244,9 +255,9 @@ export function computeGapTree(params: {
 
     const subRows: GapRow[] = []
 
-    if (meta?.category === 'equipment' && row.missing > 0 && recipeMap.has(child.itemId)) {
-      // Expand equipment's sub-recipe (fully, including nested equipment) to show upgrade path
-      const sub = expand(child.itemId, row.missing, recipeMap, ingredientMap, metaMap, new Set(), false)
+    if ((meta?.category === 'equipment' || meta?.category === 'ship') && row.missing > 0 && recipeMap.has(child.itemId)) {
+      // Expand equipment/ship sub-recipe (fully) to show the build/upgrade path
+      const sub = expand(child.itemId, row.missing, recipeMap, ingredientMap, metaMap, new Set(), false, 0, stopAtItemId)
       for (const [subId, subQty] of sub) {
         if (subId === child.itemId) continue
         subRows.push(makeGapRowAlloc(subId, subQty, inventoryMap, metaMap, allocatedMap))

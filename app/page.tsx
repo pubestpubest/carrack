@@ -48,6 +48,14 @@ export default async function DashboardPage() {
     : goalItem?.name?.toLowerCase().includes('volante')  ? 'volante'
     : null
 
+  const VARIANT_HULL: Record<string, string> = {
+    none: 'Batali Sailboat', sailboat: 'Epheria Sailboat', frigate: 'Epheria Frigate',
+    caravel: 'Epheria Caravel', galleass: 'Epheria Galleass',
+  }
+  const stopAtItemId = currentStage
+    ? (allItems ?? []).find(i => i.name === VARIANT_HULL[currentStage.variant])?.item_id ?? null
+    : null
+
   const gapRows = activeGoal?.item_id ? computeGap({
     targetItemId: activeGoal.item_id,
     targetQty:    activeGoal.target_qty,
@@ -55,6 +63,7 @@ export default async function DashboardPage() {
     ingredients:  ingredients ?? [],
     inventory:    inventory ?? [],
     itemMeta:     allItems ?? [],
+    stopAtItemId,
   }) : []
 
   const progress     = overallProgress(gapRows)

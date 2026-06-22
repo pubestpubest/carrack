@@ -17,6 +17,15 @@ function deriveVariant(name: string): string | null {
   return null
 }
 
+// Current-ship variant → its hull item name (for stop-at-current-ship in gap-analysis)
+const VARIANT_HULL: Record<string, string> = {
+  none:     'Batali Sailboat',
+  sailboat: 'Epheria Sailboat',
+  frigate:  'Epheria Frigate',
+  caravel:  'Epheria Caravel',
+  galleass: 'Epheria Galleass',
+}
+
 const CATEGORY_ORDER = ['equipment', 'material', 'stone', 'license', 'currency']
 const CATEGORY_LABEL: Record<string, string> = {
   equipment: 'Ship Equipment',
@@ -60,6 +69,12 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
   const isShipGoal = typedGoal.current_stage_id != null
   const variant    = isShipGoal && itemMeta?.name ? deriveVariant(itemMeta.name) : null
 
+  // Stop the hull chain at the ship the user already has
+  const currentHullName = currentStage ? VARIANT_HULL[currentStage.variant] : null
+  const stopAtItemId = currentHullName
+    ? (allItems ?? []).find(i => i.name === currentHullName)?.item_id ?? null
+    : null
+
   const rows = typedGoal.item_id ? computeGapTree({
     targetItemId: typedGoal.item_id,
     targetQty:    typedGoal.target_qty,
@@ -67,6 +82,7 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
     ingredients:  ingredients ?? [],
     inventory:    inventory ?? [],
     itemMeta:     allItems ?? [],
+    stopAtItemId,
   }) : []
 
   const progress  = overallProgress(rows)
@@ -91,6 +107,7 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
       {isShipGoal && (
         <ShipGoalImage
           variant={variant}
+          imageUrl={itemMeta?.image_url ?? null}
           name={itemMeta?.name ?? 'Ship Goal'}
           className="mb-6 h-40 w-full rounded-2xl"
         />

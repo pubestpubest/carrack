@@ -5,16 +5,29 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 type ShipStage   = { stage_id: number; ship_name: string; stage_order: number; variant: string }
-type CarrackItem = { item_id: number; name: string; name_th: string | null; grade: string }
+type CarrackItem = { item_id: number; name: string; name_th: string | null; grade: string; tier: number; category: string }
 type EquipItem   = { item_id: number; name: string; name_th: string | null; grade: string; image_url: string | null }
 
-const CARAVEL_VARIANTS = ['advance', 'balance']
+const CARRACK_NAMES = ['Epheria Carrack: Advance', 'Epheria Carrack: Balance', 'Epheria Carrack: Valor', 'Epheria Carrack: Volante']
 
 const CARRACK_DESCRIPTIONS: Record<string, { focus: string; detail: string }> = {
   advance:  { focus: 'Cargo / Barter',   detail: 'Max inventory & weight limit — best for bartering' },
   balance:  { focus: 'All-rounder',      detail: 'Balanced stats across all categories' },
   valor:    { focus: 'Combat',           detail: 'Highest cannon damage & fire rate' },
   volante:  { focus: 'Speed',            detail: 'Fastest travel speed on the sea' },
+}
+
+// Which current-ship variants are valid starting points for a given target ship.
+// Stages only exist for none/sailboat/frigate/caravel/galleass (no "modified").
+function allowedCurrentVariants(name: string): string[] {
+  const n     = name.toLowerCase()
+  const gline = /frigate|galleass|valor|volante/.test(n)
+  const t2    = gline ? 'frigate' : 'sailboat'
+  const t3    = gline ? 'galleass' : 'caravel'
+  if (/advance|balance|valor|volante/.test(n)) return ['none', t2, t3] // T4 Carrack
+  if ((n.includes('caravel') || n.includes('galleass')))  return ['none', t2] // T3
+  if (n.includes('modified'))                              return ['none', t2] // T2.5
+  return ['none'] // T2 base hull
 }
 
 const GRADE_BG: Record<string, string> = {
@@ -55,12 +68,13 @@ function NewGoalContent() {
     const supabase = createClient()
     Promise.all([
       supabase.from('ship_stages').select('*').order('stage_order'),
-      supabase.from('items').select('item_id, name, name_th, grade')
-        .in('name', ['Epheria Carrack: Advance', 'Epheria Carrack: Balance', 'Epheria Carrack: Valor', 'Epheria Carrack: Volante']),
-    ]).then(([{ data: s }, { data: c }]) => {
+      supabase.from('items').select('item_id, name, name_th, grade, tier, category').eq('category', 'ship').gte('tier', 2),
+      supabase.from('items').select('item_id, name, name_th, grade, tier, category').in('name', CARRACK_NAMES),
+    ]).then(([{ data: s }, { data: hulls }, { data: carrackItems }]) => {
       setStages(s ?? [])
-      const ORDER = ['Epheria Carrack: Advance', 'Epheria Carrack: Balance', 'Epheria Carrack: Volante', 'Epheria Carrack: Valor']
-      setCarracks((c ?? []).sort((a, b) => ORDER.indexOf(a.name) - ORDER.indexOf(b.name)))
+      const all = [...((hulls ?? []) as CarrackItem[]), ...((carrackItems ?? []) as CarrackItem[])]
+      all.sort((a, b) => a.tier - b.tier || a.item_id - b.item_id)
+      setCarracks(all)
     })
   }, [goalType])
 
@@ -77,17 +91,13 @@ function NewGoalContent() {
     item.name.toLowerCase().includes('advance') ? 'advance'
       : item.name.toLowerCase().includes('balance') ? 'balance'
       : item.name.toLowerCase().includes('valor')   ? 'valor'
-      : 'volante'
+      : item.name.toLowerCase().includes('volante') ? 'volante'
+      : ''
 
   const currentShipOptions: ShipStage[] = (() => {
     if (!target) return []
-    const variant       = variantOf(target)
-    const isCaravelPath = CARAVEL_VARIANTS.includes(variant)
-    return stages.filter(s =>
-      s.stage_order < 3 &&
-      (s.variant === 'none' ||
-       (isCaravelPath ? ['sailboat', 'caravel'] : ['frigate', 'galleass']).includes(s.variant))
-    )
+    const allowed = allowedCurrentVariants(target.name)
+    return stages.filter(s => allowed.includes(s.variant))
   })()
 
   function handleSelectTarget(item: CarrackItem) {
@@ -202,14 +212,13 @@ function NewGoalContent() {
           {/* Step 1: Pick Carrack */}
           {step === 1 && (
             <div>
-              <h1 className="mb-2 text-xl font-bold">Which Carrack are you building?</h1>
+              <h1 className="mb-2 text-xl font-bold">Which ship are you building?</h1>
               <p className="mb-6 text-sm text-gray-400">
-                Choose your target. The tracker will show everything needed to get there.
+                Choose your target — any tier. The tracker shows everything needed to get there.
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-tour="carrack-list">
                 {carracks.map(item => {
-                  const v    = variantOf(item)
-                  const desc = CARRACK_DESCRIPTIONS[v]
+                  const desc = CARRACK_DESCRIPTIONS[variantOf(item)]
                   return (
                     <button
                       key={item.item_id}
@@ -217,10 +226,17 @@ function NewGoalContent() {
                       data-tour="carrack-option"
                       className="rounded-lg border border-gray-700 bg-gray-900 p-5 text-left transition-colors hover:border-blue-500 hover:bg-gray-800"
                     >
-                      <p className="mb-1 font-semibold grade-blue">{item.name}</p>
-                      {item.name_th && <p className="mb-2 text-xs text-gray-500">{item.name_th}</p>}
-                      <p className="text-xs font-medium text-blue-400">{desc?.focus}</p>
-                      <p className="text-xs text-gray-500">{desc?.detail}</p>
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <p className={`font-semibold grade-${item.grade}`}>{item.name}</p>
+                        <span className="shrink-0 text-[10px] uppercase tracking-wider text-gray-600">T{item.tier}</span>
+                      </div>
+                      {item.name_th && <p className="mb-2 text-xs text-gray-500 font-thai">{item.name_th}</p>}
+                      {desc && (
+                        <>
+                          <p className="text-xs font-medium text-blue-400">{desc.focus}</p>
+                          <p className="text-xs text-gray-500">{desc.detail}</p>
+                        </>
+                      )}
                     </button>
                   )
                 })}
