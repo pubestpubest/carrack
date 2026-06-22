@@ -12,6 +12,18 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.11',
+    tag:     'v0.11',
+    date:    '2026-06-22',
+    title:   'Track any ship — full hull progression',
+    notes: [
+      'Set any ship as your goal — Sailboat, Frigate, Caravel, or Galleass — not just the four Carracks.',
+      'The tracker expands the whole build chain down to raw materials, and a Carrack now correctly requires building its base hull (Caravel or Galleass).',
+      'Tell it which ship you already own and the chain stops there, so you only see what’s still left to gather.',
+      'New “ship” filter in the catalogue.',
+    ],
+  },
+  {
     version: 'Alpha 0.10',
     tag:     'v0.10',
     date:    '2026-06-22',

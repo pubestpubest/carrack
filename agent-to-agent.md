@@ -56,8 +56,12 @@ no longer true.
   2 Balance now correctly show the Caravel build path. Existing goals predate the current-ship
   picker, so users with no `current_stage_id` see the full hull path until they set one.
 
+> Releases: add an entry atop `lib/releases.ts` **and** cut a matching git tag (`v0.x`); the
+> footer + `/releases` follow `CURRENT` automatically. `package.json` version is left at `0.1.0`.
+
 ## Log
 
+- **2026-06-22** — Released **Alpha 0.11** (tag `v0.11`): ships feature changelog entry.
 - **2026-06-22** — Completed the ships feature: verified the committed code (`f35d390`),
   confirmed live schema, applied the Carrack→hull re-chaining (user-approved), added
   `scripts/ship-gap-test.ts`. Prior session seeded the ship data and wrote the code.
