@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import { Cinzel, Spectral, Niramit } from 'next/font/google'
+import Link from 'next/link'
 import './globals.css'
 import Nav from '@/components/nav'
 import Tutorial from '@/app/components/tutorial'
 import SessionGather from '@/app/components/session-gather'
+import { CURRENT } from '@/lib/releases'
 
 const cinzel = Cinzel({
   subsets:  ['latin'],
@@ -42,8 +44,19 @@ export default function RootLayout({
       <body className={`${spectral.className} antialiased flex flex-col min-h-screen`}>
         <Nav />
         <main className="flex-1">{children}</main>
-        <footer className="mt-8 border-t border-gray-800/60 py-4 text-center text-xs text-gray-700 tracking-widest uppercase">
-          Carrack Tracker&ensp;·&ensp;Alpha 0.9
+        <footer className="mt-12 border-t" style={{ borderColor: 'rgba(200,168,75,0.12)' }}>
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs sm:flex-row">
+            <span className="flex items-center gap-2 font-display uppercase tracking-widest text-[#5a6678]">
+              <span aria-hidden>⚓</span> Carrack Tracker
+            </span>
+            <Link
+              href="/releases"
+              className="group inline-flex items-center gap-1.5 font-display uppercase tracking-widest text-[#5a6678] transition-colors hover:text-[var(--brass-light)]"
+            >
+              <span>{CURRENT.version}</span>
+              <span className="opacity-50 transition-opacity group-hover:opacity-100">· release notes →</span>
+            </Link>
+          </div>
         </footer>
         <SessionGather />
         <Tutorial />

@@ -30,7 +30,7 @@ export async function updateSession(request: NextRequest) {
 
   const pathname    = request.nextUrl.pathname
   const isAuthRoute = pathname.startsWith('/auth')
-  const isPublic    = pathname.startsWith('/catalogue') || isAuthRoute
+  const isPublic    = pathname.startsWith('/catalogue') || pathname.startsWith('/releases') || isAuthRoute
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()
