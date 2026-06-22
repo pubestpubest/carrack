@@ -2,8 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import type { TablesUpdate } from '@/lib/types/database'
 
 export default function GoalActions({
   goalId,
@@ -20,9 +18,10 @@ export default function GoalActions({
 
   async function toggleActive() {
     startTransition(async () => {
-      const supabase = createClient()
-      const update: TablesUpdate<'user_goals'> = { is_active: !isActive }
-      await supabase.from('user_goals').update(update).eq('id', goalId)
+      // PATCH enforces one active goal per type (pauses any other active same-type goal).
+      await fetch(`/api/goals/${goalId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: !isActive }),
+      })
       router.refresh()
     })
   }

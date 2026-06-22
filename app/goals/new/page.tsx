@@ -131,7 +131,13 @@ function NewGoalContent() {
         .select('id')
         .single()
       if (err) { setError(err.message); return }
-      if (data) router.push(`/goals/${data.id}`)
+      if (data) {
+        // Make the new goal the sole active one of its type (pauses any other active same-type goal).
+        await fetch(`/api/goals/${data.id}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: true }),
+        })
+        router.push(`/goals/${data.id}`)
+      }
     })
   }
 
@@ -154,7 +160,13 @@ function NewGoalContent() {
         .select('id')
         .single()
       if (err) { setError(err.message); return }
-      if (data) router.push(`/goals/${data.id}`)
+      if (data) {
+        // Make the new goal the sole active one of its type (pauses any other active same-type goal).
+        await fetch(`/api/goals/${data.id}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: true }),
+        })
+        router.push(`/goals/${data.id}`)
+      }
     })
   }
 

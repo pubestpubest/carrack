@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { computeGapTree, overallProgress } from '@/lib/gap-analysis'
 import type { Tables } from '@/lib/types/database'
+import { VARIANT_HULL } from '@/lib/ships'
 import GoalActions from './goal-actions'
 import GoalDeleteButton from '../goal-delete-button'
 import MaterialQtyInput from './material-qty-input'
@@ -17,16 +18,6 @@ function deriveVariant(name: string): string | null {
   return null
 }
 
-// Current-ship variant → its hull item name (for stop-at-current-ship in gap-analysis)
-const VARIANT_HULL: Record<string, string> = {
-  none:              'Batali Sailboat',
-  sailboat:          'Epheria Sailboat',
-  frigate:           'Epheria Frigate',
-  sailboat_modified: 'Epheria Sailboat (Modified)',
-  frigate_modified:  'Epheria Frigate (Modified)',
-  caravel:           'Epheria Caravel',
-  galleass:          'Epheria Galleass',
-}
 
 const CATEGORY_ORDER = ['equipment', 'material', 'stone', 'license', 'currency']
 const CATEGORY_LABEL: Record<string, string> = {

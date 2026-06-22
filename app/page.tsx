@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { computeGap, overallProgress } from '@/lib/gap-analysis'
 import type { Tables } from '@/lib/types/database'
+import { VARIANT_HULL } from '@/lib/ships'
 import ShipTree from './components/ship-tree'
 
 export default async function DashboardPage() {
@@ -48,11 +49,6 @@ export default async function DashboardPage() {
     : goalItem?.name?.toLowerCase().includes('volante')  ? 'volante'
     : null
 
-  const VARIANT_HULL: Record<string, string> = {
-    none: 'Batali Sailboat', sailboat: 'Epheria Sailboat', frigate: 'Epheria Frigate',
-    sailboat_modified: 'Epheria Sailboat (Modified)', frigate_modified: 'Epheria Frigate (Modified)',
-    caravel: 'Epheria Caravel', galleass: 'Epheria Galleass',
-  }
   const stopAtItemId = currentStage
     ? (allItems ?? []).find(i => i.name === VARIANT_HULL[currentStage.variant])?.item_id ?? null
     : null

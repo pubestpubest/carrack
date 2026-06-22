@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
-const STORAGE_KEY = 'carrack-tutorial-done-v3'
+const STORAGE_KEY = 'carrack-tutorial-done-v4'
 
 type Step = {
   title:      string
@@ -64,6 +64,13 @@ const STEPS: Step[] = [
     body:     'แต่ละแถวแสดง จำนวนที่มี / จำนวนที่ต้องการ และราคา Crow Coin ถ้าอยากซื้อแทนฟาร์ม เลื่อนดูรายการทั้งหมดได้เลย',
     selector: '[data-tour="materials-section"]',
     hint:     'เลื่อนดูรายการวัตถุดิบด้านล่าง',
+  },
+  // ── 7b. Manage goals ─────────────────────────────────────────────────────────
+  {
+    title:    'จัดการเป้าหมายหลายอัน',
+    body:     'ตั้งได้หลายเป้าหมายทั้งเรือและอุปกรณ์ — ที่เมนู Goals กดหยุดชั่วคราว/ทำต่อ หรือลบได้ เปิดใช้งานได้ทีละ 1 เป้าหมายต่อประเภท (เรือ 1 + อุปกรณ์ 1) ที่เหลือจะถูกพักไว้อัตโนมัติ',
+    selector: '[data-tour="nav-goals"]',
+    hint:     'จัดการเป้าหมายทั้งหมดได้ที่เมนู Goals',
   },
   // ── 8. Go to Inventory ───────────────────────────────────────────────────────
   {

@@ -61,6 +61,14 @@ no longer true.
 
 ## Log
 
+- **2026-06-22** — Released **Alpha 0.14** (tag `v0.14`): `/goals` is now a management list of
+  ALL goals (active + paused, both types) via `app/goals/goals-list.tsx`; added `PATCH /api/goals/[id]`
+  enforcing one active goal per type (ship = `current_stage_id` not null) — activating/creating
+  auto-pauses the same-type active goal. Create flow + goal-detail `GoalActions` route through PATCH.
+  Extracted the duplicated `VARIANT_HULL` map to `lib/ships.ts` (was in goal-detail + dashboard).
+  Tutorial gained a manage-goals step; `STORAGE_KEY` bumped to `v4` so the tour re-shows. No DB change.
+  NOTE: pre-existing data may violate the one-active invariant (one user had 2 active ship + 2 active
+  equip); not auto-normalized — resolves as the user activates/pauses. Offer to normalize if asked.
 - **2026-06-22** — Released **Alpha 0.13** (tag `v0.13`): added Modified Sailboat/Frigate as
   `ship_stages` (migration `add_modified_ship_stages`, variants `sailboat_modified`/`frigate_modified`)
   so they're selectable "current ship" start points; `allowedCurrentVariants` + both `VARIANT_HULL`

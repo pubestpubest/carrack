@@ -12,6 +12,17 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.14',
+    tag:     'v0.14',
+    date:    '2026-06-22',
+    title:   'Manage multiple goals',
+    notes: [
+      'The Goals page is now a manager for all your goals — ship and equipment, active and paused — each with progress, plus pause/resume and delete.',
+      'One ship goal and one equipment goal stay active at a time; activating or creating another automatically pauses the previous one of that type.',
+      'Tutorial updated to cover managing goals.',
+    ],
+  },
+  {
     version: 'Alpha 0.13',
     tag:     'v0.13',
     date:    '2026-06-22',
