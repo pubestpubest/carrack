@@ -12,6 +12,16 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.13',
+    tag:     'v0.13',
+    date:    '2026-06-22',
+    title:   'Start from a modified ship',
+    notes: [
+      'You can now pick a Modified Sailboat or Modified Frigate as your current ship when setting a ship goal — no more being told to build a ship you already own.',
+      'Current-ship choices are now ordered along the build path (base → modified → upgraded).',
+    ],
+  },
+  {
     version: 'Alpha 0.12',
     tag:     'v0.12',
     date:    '2026-06-22',

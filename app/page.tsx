@@ -50,6 +50,7 @@ export default async function DashboardPage() {
 
   const VARIANT_HULL: Record<string, string> = {
     none: 'Batali Sailboat', sailboat: 'Epheria Sailboat', frigate: 'Epheria Frigate',
+    sailboat_modified: 'Epheria Sailboat (Modified)', frigate_modified: 'Epheria Frigate (Modified)',
     caravel: 'Epheria Caravel', galleass: 'Epheria Galleass',
   }
   const stopAtItemId = currentStage

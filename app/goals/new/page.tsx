@@ -16,16 +16,22 @@ const CARRACK_DESCRIPTIONS: Record<string, { focus: string; detail: string }> = 
 }
 
 // Which current-ship variants are valid starting points for a given target ship.
-// Stages only exist for none/sailboat/frigate/caravel/galleass (no "modified").
+// Progression: none → base hull → modified hull → T3 ship → Carrack.
 function allowedCurrentVariants(name: string): string[] {
   const n     = name.toLowerCase()
   const gline = /frigate|galleass|valor|volante/.test(n)
   const t2    = gline ? 'frigate' : 'sailboat'
+  const t2mod = gline ? 'frigate_modified' : 'sailboat_modified'
   const t3    = gline ? 'galleass' : 'caravel'
-  if (/advance|balance|valor|volante/.test(n)) return ['none', t2, t3] // T4 Carrack
-  if ((n.includes('caravel') || n.includes('galleass')))  return ['none', t2] // T3
-  if (n.includes('modified'))                              return ['none', t2] // T2.5
+  if (/advance|balance|valor|volante/.test(n)) return ['none', t2, t2mod, t3] // T4 Carrack
+  if ((n.includes('caravel') || n.includes('galleass')))  return ['none', t2, t2mod] // T3
+  if (n.includes('modified'))                              return ['none', t2] // T2.5 modified hull
   return ['none'] // T2 base hull
+}
+
+// Display order for the current-ship picker (lower = earlier in the build path).
+const VARIANT_RANK: Record<string, number> = {
+  none: 0, sailboat: 1, frigate: 1, sailboat_modified: 2, frigate_modified: 2, caravel: 3, galleass: 3,
 }
 
 const GRADE_BG: Record<string, string> = {
@@ -95,7 +101,9 @@ function NewGoalContent() {
   const currentShipOptions: ShipStage[] = (() => {
     if (!target) return []
     const allowed = allowedCurrentVariants(target.name)
-    return stages.filter(s => allowed.includes(s.variant))
+    return stages
+      .filter(s => allowed.includes(s.variant))
+      .sort((a, b) => (VARIANT_RANK[a.variant] ?? 0) - (VARIANT_RANK[b.variant] ?? 0))
   })()
 
   function handleSelectTarget(item: CarrackItem) {

@@ -61,6 +61,11 @@ no longer true.
 
 ## Log
 
+- **2026-06-22** — Released **Alpha 0.13** (tag `v0.13`): added Modified Sailboat/Frigate as
+  `ship_stages` (migration `add_modified_ship_stages`, variants `sailboat_modified`/`frigate_modified`)
+  so they're selectable "current ship" start points; `allowedCurrentVariants` + both `VARIANT_HULL`
+  maps updated; picker ordered by `VARIANT_RANK`. Note: the modified ships are intermediate crafts,
+  so starting from a *plain* frigate still (correctly) lists Modified Frigate as needed.
 - **2026-06-22** — Released **Alpha 0.12** (tag `v0.12`): moved the 4 Carrack vessels (81–84)
   `equipment`→`ship` (migration `carracks_to_ship_category`); added a Ships section to inventory;
   catalogue sections now sort by grade. goal-new now fetches ship targets in one

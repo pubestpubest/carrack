@@ -58,12 +58,28 @@ async function main() {
   const e1 = !!galleassRow && galleassRow.missing === 0       // owned → satisfied
   const e2 = !!galleassRow && galleassRow.subRows.length === 0 // not expanded
 
+  // F) Galleass goal: start from a Modified Frigate you own → it's satisfied, its chain pruned.
+  const FRIGATE_MOD = 90, FRIGATE = 88
+  const galleassStopMod = computeGapTree({ targetItemId: GALLEASS, targetQty: 1, ...base, stopAtItemId: FRIGATE_MOD })
+  const fmodRow = galleassStopMod.find(r => r.itemId === FRIGATE_MOD)
+  const f1 = !!fmodRow && fmodRow.missing === 0          // owned Modified Frigate → satisfied
+  const f2 = !!fmodRow && fmodRow.subRows.length === 0   // not expanded
+  const f3 = !findInTree(galleassStopMod, FRIGATE)       // plain Frigate not pulled in below it
+
+  // G) Galleass goal: start from a plain Frigate → Modified Frigate is still required (the reported case).
+  const galleassStopFrig = computeGapTree({ targetItemId: GALLEASS, targetQty: 1, ...base, stopAtItemId: FRIGATE })
+  const fmodRow2 = galleassStopFrig.find(r => r.itemId === FRIGATE_MOD)
+  const g1 = !!fmodRow2 && fmodRow2.missing > 0          // must still modify the frigate
+  const g2 = !!fmodRow2 && fmodRow2.subRows.length > 0   // its build path shows
+
   const checks: [string, boolean][] = [
     ['A1 Caravel needs Sailboat(Mod)', a1], ['A2 Sailboat(Mod) chain expands', a2], ['A3 chain reaches Batali', a3],
     ['B1 owned Sailboat(Mod) missing=0', b1], ['B2 owned branch not expanded', b2], ['B3 Sailboat pruned', b3],
     ['C1 Sailboat is truncation point', c1], ['C2 Batali pruned below it', c2],
     ['D1 Balance Carrack needs Caravel hull', d1], ['D2 Caravel build path expands', d2], ['D3 Caravel counted as needed', d3],
     ['E1 owned Galleass hull missing=0', e1], ['E2 owned hull not expanded', e2],
+    ['F1 owned Frigate(Mod) missing=0', f1], ['F2 owned Frigate(Mod) not expanded', f2], ['F3 plain Frigate pruned', f3],
+    ['G1 from plain Frigate, Frigate(Mod) still needed', g1], ['G2 Frigate(Mod) build path shows', g2],
   ]
   let ok = true
   for (const [label, pass] of checks) { console.log(`${pass ? 'PASS' : 'FAIL'}  ${label}`); ok = ok && pass }

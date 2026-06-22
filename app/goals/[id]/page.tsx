@@ -19,11 +19,13 @@ function deriveVariant(name: string): string | null {
 
 // Current-ship variant → its hull item name (for stop-at-current-ship in gap-analysis)
 const VARIANT_HULL: Record<string, string> = {
-  none:     'Batali Sailboat',
-  sailboat: 'Epheria Sailboat',
-  frigate:  'Epheria Frigate',
-  caravel:  'Epheria Caravel',
-  galleass: 'Epheria Galleass',
+  none:              'Batali Sailboat',
+  sailboat:          'Epheria Sailboat',
+  frigate:           'Epheria Frigate',
+  sailboat_modified: 'Epheria Sailboat (Modified)',
+  frigate_modified:  'Epheria Frigate (Modified)',
+  caravel:           'Epheria Caravel',
+  galleass:          'Epheria Galleass',
 }
 
 const CATEGORY_ORDER = ['equipment', 'material', 'stone', 'license', 'currency']
