@@ -110,7 +110,10 @@ function hueToGrade(hue: number): string | null {
   return null
 }
 
-// Sample the colored frame ring of a cell crop and classify its grade.
+// Sample the colored frame ring of a cell crop and classify its grade by a
+// per-pixel majority vote. Voting (vs. averaging hues) is robust when a vivid
+// icon glow bleeds into the ring — the frame's dominant color still wins, where
+// an average would blend e.g. a yellow frame + red glow into a false "orange".
 // Returns null when the ring isn't saturated (empty/locked/white).
 export async function extractGrade(input: Buffer): Promise<string | null> {
   const S = 64
@@ -118,9 +121,10 @@ export async function extractGrade(input: Buffer): Promise<string | null> {
     .resize(S, S, { fit: 'fill' }).removeAlpha().raw()
     .toBuffer({ resolveWithObject: true })
   const lo = Math.floor(S * 0.03)
-  const hi = Math.ceil(S * 0.15)
+  const hi = Math.ceil(S * 0.12) // tight outer band → less icon bleed
 
-  let vx = 0, vy = 0, n = 0
+  const votes: Record<string, number> = {}
+  let n = 0
   for (let y = 0; y < S; y++) {
     for (let x = 0; x < S; x++) {
       const dEdge = Math.min(x, y, S - 1 - x, S - 1 - y)
@@ -139,15 +143,18 @@ export async function extractGrade(input: Buffer): Promise<string | null> {
         h *= 60
         if (h < 0) h += 360
       }
-      vx += Math.cos((h * Math.PI) / 180)
-      vy += Math.sin((h * Math.PI) / 180)
-      n++
+      const grade = hueToGrade(h)
+      if (grade) { votes[grade] = (votes[grade] ?? 0) + 1; n++ }
     }
   }
   if (n < S * 0.5) return null // too few saturated ring pixels
-  let mean = (Math.atan2(vy, vx) * 180) / Math.PI
-  if (mean < 0) mean += 360
-  return hueToGrade(mean)
+
+  let best: string | null = null
+  let bestCount = 0
+  for (const [grade, count] of Object.entries(votes)) {
+    if (count > bestCount) { bestCount = count; best = grade }
+  }
+  return best
 }
 
 // pHash is not translation-invariant, and uniform grid crops drift a few px from
