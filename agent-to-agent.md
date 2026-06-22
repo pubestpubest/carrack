@@ -61,6 +61,11 @@ no longer true.
 
 ## Log
 
+- **2026-06-22** — Released **Alpha 0.16** (tag `v0.16`): gated the onboarding `Tutorial`
+  (mounted globally in `app/layout.tsx`) on auth — it was popping up on `/auth/*` for logged-out
+  visitors. Uses `supabase.auth.onAuthStateChange` (not a one-shot `getUser`) because the root
+  layout persists across the login→dashboard client nav, so a fresh login must flip `authed`
+  in-place to trigger the tour. `?` re-trigger button also hidden when signed out.
 - **2026-06-22** — Released **Alpha 0.15** (tag `v0.15`): corrected the ship build path — T3 ships
   build DIRECTLY from the base hull (migration `t3_ships_build_from_base_hull`: recipe 22 ship
   ingredient 89→87 Caravel←Sailboat, recipe 23 90→88 Galleass←Frigate). The "(Modified)" ships

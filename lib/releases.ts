@@ -12,6 +12,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.16',
+    tag:     'v0.16',
+    date:    '2026-06-22',
+    title:   'Tutorial only for signed-in users',
+    notes: [
+      'The onboarding tour no longer pops up on the login/register screens — it now starts only after you sign in, and kicks off automatically for new accounts.',
+    ],
+  },
+  {
     version: 'Alpha 0.15',
     tag:     'v0.15',
     date:    '2026-06-22',

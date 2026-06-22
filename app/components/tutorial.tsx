@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { createClient } from '@/lib/supabase/client'
 
 const STORAGE_KEY = 'carrack-tutorial-done-v4'
 
@@ -241,20 +242,33 @@ function Tooltip({
 
 export default function Tutorial() {
   const [mounted, setMounted] = useState(false)
+  const [authed,  setAuthed]  = useState(false)
   const [active,  setActive]  = useState(false)
   const [index,   setIndex]   = useState(0)
   const [rect,    setRect]    = useState<DOMRect | null>(null)
 
   useEffect(() => { setMounted(true) }, [])
 
-  // Auto-show once
+  // The tour only applies to signed-in users (it spotlights pages behind auth).
+  // Use onAuthStateChange, not a one-shot check: the root layout persists across the
+  // login→dashboard client navigation, so a fresh login must flip this to true here.
   useEffect(() => {
-    if (!mounted) return
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => setAuthed(!!user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthed(!!session?.user)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Auto-show once, signed-in only
+  useEffect(() => {
+    if (!mounted || !authed) return
     if (!localStorage.getItem(STORAGE_KEY)) {
       const t = setTimeout(() => setActive(true), 900)
       return () => clearTimeout(t)
     }
-  }, [mounted])
+  }, [mounted, authed])
 
   const step = STEPS[index]
 
@@ -318,7 +332,7 @@ export default function Tutorial() {
     setActive(true)
   }, [])
 
-  if (!mounted) return null
+  if (!mounted || !authed) return null
 
   return (
     <>
