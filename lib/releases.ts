@@ -12,6 +12,16 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.23',
+    tag:     'v0.23',
+    date:    '2026-06-24',
+    title:   'Scanner catches more items · review list matches your screenshot',
+    notes: [
+      'The screenshot scanner was throwing away confident matches whenever a similar-looking item sat close behind, so a full inventory came back with only a fraction of its goods. It now keeps strong matches — on a test inventory it found ~52 items instead of 28.',
+      'The Inventory Sync review list now follows the same top-to-bottom, left-to-right order as your screenshot, so it lines up for easy side-by-side checking instead of being shuffled by confidence.',
+    ],
+  },
+  {
     version: 'Alpha 0.22',
     tag:     'v0.22',
     date:    '2026-06-23',

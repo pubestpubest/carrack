@@ -60,13 +60,13 @@ export default function InventorySync({ catalogue }: { catalogue: Catalogue[] })
       if (!res.ok) throw new Error(j?.error ?? 'สแกนภาพไม่สำเร็จ')
       const cands: ScanCandidate[] = j?.candidates ?? []
       const next: Row[] = []
+      // Keep scan order (row-major = image reading order) so the list lines up
+      // with the screenshot for easy side-by-side review.
       for (const c of cands) {
         const item = byId.get(c.item_id)
         if (!item) continue
         next.push({ item, scanned: c.qty, confidence: c.confidence, include: true })
       }
-      // Lowest-confidence first so the rows needing a human eye sit at the top.
-      next.sort((a, b) => a.confidence - b.confidence)
       setRows(next)
       setSkipped(j?.skipped ?? 0)
       if (next.length === 0) setError('ไม่พบไอเทมในภาพ ลองถ่าย/ครอบให้ตรงช่องเก็บของ')

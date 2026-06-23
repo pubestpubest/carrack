@@ -120,6 +120,18 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
 
 ## Log
 
+- **2026-06-24** — Released **Alpha 0.23** (tag `v0.23`): **scanner recall + review order**.
+  (1) The acceptance gate in `lib/vision/scan.ts` rejected a match if `margin <= ACCEPT_MARGIN`
+  *even when the absolute score was excellent* (e.g. s=0.084 dropped because a sibling sat 0.09
+  behind) — that alone halved recall. New score-aware rule: reject only if `s >= ACCEPT_SCORE
+  (0.45)` **or** (`s >= STRONG_SCORE (0.38)` **and** `margin <= ACCEPT_MARGIN (0.04)`); a confident
+  score bypasses the margin gate. Verified on the 9×10 test image: **52 unique items** (63 cells,
+  merged across stacked slots) vs 28 before; baseline `raw-session-input.png` unchanged (6 correct).
+  ponytail: recall favored over precision because the Sync/session screens let users deselect FPs
+  but can't add misses (no manual-add). (2) Inventory Sync review list no longer re-sorts by
+  confidence — `scanImage` returns row-major (image) order, so the list now lines up with the
+  screenshot. NOTE: `next lint` is deprecated and drops to an interactive prompt; use `npm run build`
+  (compiles + lints) as the gate.
 - **2026-06-23** — Released **Alpha 0.22** (tag `v0.22`): **fixed the scanner grid**. `lib/vision`
   hardcoded `DEFAULT_GRID = 5×7`, so any inventory bigger than a small bag scanned to **0 items**
   (caught testing Inventory Sync on a real 9×10 screenshot). BDO keeps a fixed slot pitch (~51.5px)

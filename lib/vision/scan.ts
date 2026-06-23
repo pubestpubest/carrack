@@ -16,8 +16,9 @@ export type ScanCandidate = {
 }
 export type ScanResult = { candidates: ScanCandidate[]; skipped: number }
 
-const ACCEPT_SCORE  = 0.35
-const ACCEPT_MARGIN = 0.10
+const ACCEPT_SCORE  = 0.45 // weakest match still accepted
+const STRONG_SCORE  = 0.38 // a confident match is accepted regardless of margin
+const ACCEPT_MARGIN = 0.04 // for mediocre scores only, require some lead over runner-up
 const ITEM_BRIGHT   = 60 // white-grade items are bright; locked padlock is dark
 
 const templates: Templates = loadTemplates(templatesJson as Record<string, string>)
@@ -59,7 +60,10 @@ export async function scanImage(buf: Buffer, refs: RefItem[], grid?: GridSpec): 
       .sort((a, b) => a.s - b.s)
     const margin = (ranked[1]?.s ?? Infinity) - ranked[0].s
 
-    if (ranked[0].s >= ACCEPT_SCORE || margin <= ACCEPT_MARGIN) { skipped++; continue }
+    // Reject only weak matches, or mediocre ones too close to the runner-up.
+    // A confident absolute score (< STRONG_SCORE) is accepted even if a similar
+    // item sits close behind — the margin gate was dropping near-perfect matches.
+    if (ranked[0].s >= ACCEPT_SCORE || (ranked[0].s >= STRONG_SCORE && margin <= ACCEPT_MARGIN)) { skipped++; continue }
 
     const qty = readQuantity(await extractGlyphs(cell), templates) ?? 1
     const m = ranked[0].ref
