@@ -6,12 +6,16 @@ type SessionItem = { item_id: number; delta: number }
 
 // Batch "gathering session" save — increments many items at once.
 // Each item's qty becomes (current qty + delta); logged with reason 'gathering session'.
+const REASONS = new Set(['gathering session', 'barter in', 'barter out'])
+
 export async function POST(request: NextRequest) {
   const body = await request.json()
   const rawItems: unknown = body?.items
   if (!Array.isArray(rawItems) || rawItems.length === 0) {
     return NextResponse.json({ error: 'items must be a non-empty array' }, { status: 400 })
   }
+  // Whitelist the audit reason; default keeps existing gather behavior.
+  const reason = REASONS.has(body?.reason) ? body.reason as string : 'gathering session'
 
   const items: SessionItem[] = []
   for (const r of rawItems) {
@@ -59,7 +63,7 @@ export async function POST(request: NextRequest) {
     user_id: user.id,
     item_id,
     delta,
-    reason: 'gathering session',
+    reason,
   }))
   await supabase.from('inventory_log').insert(logRows)
 

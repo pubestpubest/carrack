@@ -42,38 +42,34 @@ no longer true.
   truncation, and the Carrack→hull requirement. Extend it whenever you touch
   `lib/gap-analysis.ts`.
 
-## Planned features (requested 2026-06-23 — NOT built yet)
+## CV inventory features (BUILT 2026-06-23, Alpha 0.21 — committed, not yet user-tested)
 
-Two CV-adjacent inventory features are queued. Both reuse the vision pipeline (`lib/vision/*`,
-`scanImage` + `loadReferences`); references are built from local catalogue icons via each item's
-`image_url`, so the now-committed barter PNGs are matchable. Existing CV plumbing:
-`POST app/api/inventory/session/scan/route.ts` (scan), `app/api/inventory/session/route.ts`
-(apply), `app/components/session-gather.tsx` (the floating quick-record UI). `runtime = 'nodejs'`
-is required wherever `sharp` runs.
+Both queued CV-adjacent features are now implemented. They reuse the vision pipeline (`lib/vision/*`,
+`scanImage` + `loadReferences`); references build from local catalogue icons via `image_url`, so the
+committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/session/scan/route.ts`
+(scan), `app/api/inventory/session/route.ts` (apply, now takes a whitelisted `reason`),
+`app/api/inventory/[itemId]/route.ts` (PUT = SET qty). `runtime = 'nodejs'` wherever `sharp` runs.
 
-1. **Inventory Sync (full reconcile from a screenshot) — REPLACE-wise, NEW layout.**
-   - Upload a BDO inventory screenshot → scan reads item + qty → match against **all** catalogue
-     items (every category) → the read quantities **overwrite** `user_inventory.qty_have` (SET, not
-     ADD). Items NOT seen in the image are left untouched — do NOT zero them.
-   - Distinct from the existing gather session (which ADDS a delta). Build a **different, dedicated
-     layout**: a review screen showing the uploaded image beside the detected list (with
-     confidence), each row showing `current → scanned`, editable/deselectable before applying.
-   - Reuse the scan endpoint for detection; apply via `PUT /api/inventory/[itemId]` per item — that
-     route already SETS `qty` (= replace) and logs the audit delta. Let users correct mismatches
-     before writing; mind `ACCEPT_SCORE`/`ACCEPT_MARGIN` tuning in `lib/vision/scan.ts`.
-   - Reference screenshot for the intended source/layout: `docs/raw-inventory-sync.png`.
+1. **Inventory Sync (full reconcile) — DONE.** `app/inventory/sync/page.tsx` (server, fetches all
+   items + current qty) + `sync-client.tsx` (review UI). Upload screenshot → scan all categories →
+   review screen (image left, detected list right, lowest-confidence first), each row
+   `current → editable scanned` with a confidence badge + include checkbox. Apply PUTs `qty` per
+   **included AND changed** row (`PUT /api/inventory/[itemId]`, SETs + logs delta `reason='manual
+   update'`). Unseen items never get a PUT (not zeroed). Entry point: "ซิงค์จากภาพ" button on
+   `/inventory`. NOTE: PUT still logs `'manual update'` — no distinct `'inventory sync'` reason yet.
 
-2. **Barter Session (input / output mode) — SAME layout as the gather session, barter-only.**
-   - Clone the floating quick-record flow (`session-gather.tsx` + `/api/inventory/session*`) but
-     scope the searchable items to `category='barter'` only.
-   - Add a **mode toggle: Input vs Output** — Output just inverts the sign (negative delta = loaded
-     onto ship / bartered away; Input = acquired). Deltas clamp at 0 via the `qty_have >= 0` CHECK;
-     record the mode in the audit `reason` (e.g. `'barter in'` / `'barter out'`).
-   - Only the item filter + the +/- sign differ from today's session; keep the UI identical.
+2. **Barter Session (input/output) — DONE.** No clone: `session-gather.tsx` was **parameterized**
+   with a `barter` prop; `layout.tsx` mounts `<SessionGather />` + `<SessionGather barter />` (teal
+   FAB at `bottom-32`, gather at `bottom-16`). Barter mode filters catalogue to `category='barter'`,
+   adds an Input/Output toggle (`out` state → `sign = barter && out ? -1 : 1`), and sends
+   `reason='barter in'|'barter out'`. The session POST whitelists reasons
+   (`'gathering session'|'barter in'|'barter out'`, default gather). Before→after, totals, and the
+   local haveMap update all clamp via `Math.max(0, …)` and respect the sign. Non-barter scan hits
+   auto-drop into the "skipped" note. Reference screenshot for sync source: `docs/raw-inventory-sync.png`.
 
 ## Current state (2026-06-23)
 
-**Barter feature: items SEEDED to prod (2026-06-23); scraper + assets NOT committed; UI not built.**
+**Barter feature: items live in prod; scraper + assets committed; UI built (Barter Hold + session + sync).**
 - New scraper `scripts/scrape-barter-items.mjs`: iterates bdocodex item IDs, pulls name/name_th
   from EN+TH `og:title`, grade from the `grade_frame_N` class, barter level from the `[Level N]`
   prefix, icon from `og:image`. `--images` downloads + converts webp→png via `sharp` into
@@ -94,14 +90,12 @@ is required wherever `sharp` runs.
   `items_category_check` to include `'barter'` + upserted all 118 (`ON CONFLICT (item_id) DO UPDATE`,
   re-runnable). Verified: 118 rows, 0 missing th/img, grades 14/14/14/14/62, ids 800001–800248.
   No `database.ts` regen needed (`category` is typed `string`).
+- **DONE since:** barter PNGs + `barter-items.json` + scraper are committed and live; barter UI
+  shipped (Barter Hold page in Alpha 0.19–0.20, Barter session + Inventory Sync in Alpha 0.21).
 - **STILL PENDING:**
-  1. `public/images/barter/*.png` (118) + `barter-items.json` + the scraper are **uncommitted** —
-     the seeded `image_url`s (`/images/barter/<id>.png`) will **404 in prod until pushed** (assets
-     ship in the Docker image's `public/`). Push to deploy them.
-  2. Build the barter inventory UI — user wants **session input/output with the CV scanner** (reuse
-     `lib/vision/*`). Note the scanner builds references from local catalogue icons, so the new
-     barter PNGs must be present for it to recognize them.
-  3. `weight`/Versatile-Tonnage was NOT scraped; add a nullable column later if cargo math is wanted.
+  1. `weight`/Versatile-Tonnage was NOT scraped; add a nullable column later if cargo math is wanted.
+  2. Neither new CV feature is **user-tested against a real screenshot** — scanner accuracy on barter
+     icons (`ACCEPT_SCORE`/`ACCEPT_MARGIN` in `lib/vision/scan.ts`) is unverified. Watch for misreads.
 
 **Ships feature: DONE, live, verified.**
 - Ship items (86–92) + hull build chain (recipes 18–23) seeded live; each ship's build recipe
@@ -125,6 +119,14 @@ is required wherever `sharp` runs.
 
 ## Log
 
+- **2026-06-23** — Released **Alpha 0.21** (tag `v0.21`): two CV inventory features. (1) **Barter
+  session** — parameterized `session-gather.tsx` with a `barter` prop (no clone); `layout.tsx`
+  mounts a second `<SessionGather barter />` (teal FAB, `bottom-32`). Barter-only catalogue +
+  Input/Output toggle (`sign = barter && out ? -1 : 1`); `session/route.ts` now whitelists the audit
+  `reason` (`barter in`/`barter out`/`gathering session`). (2) **Inventory Sync** — new
+  `/inventory/sync` (`page.tsx` + `sync-client.tsx`): upload screenshot → scan all → review
+  (current→scanned, editable/deselectable) → PUT per changed row (SET, unseen untouched); linked
+  from `/inventory`. `tsc`/`lint`/`build` clean. Not yet tested on a real screenshot.
 - **2026-06-23** — Barter items SEEDED: wrote `scripts/scrape-barter-items.mjs`, scraped
   800001–800070 & 800201–800248 (118 items + images), and applied migration `add_barter_items`
   to prod (user-approved) — widened `items_category_check` to add `'barter'` + upserted 118 rows

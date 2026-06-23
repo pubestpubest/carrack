@@ -26,10 +26,13 @@ const GRADE_BG: Record<string, string> = {
   yellow: '#2a1f00', orange: '#2a1000', red: '#2a0a0a',
 }
 
-export default function SessionGather() {
+// barter=true: barter-only catalogue + Input/Output toggle (Output removes from inventory).
+export default function SessionGather({ barter = false }: { barter?: boolean }) {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [open,    setOpen]    = useState(false)
+  const [out,     setOut]     = useState(false) // barter only: Output = loaded onto ship / bartered away
+  const sign = barter && out ? -1 : 1
 
   const [items,    setItems]    = useState<Item[]>([])
   const [haveMap,  setHaveMap]  = useState<Map<number, number>>(new Map())
@@ -74,8 +77,9 @@ export default function SessionGather() {
   const loadData = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
+    const itemsQ = supabase.from('items').select('item_id, name, name_th, grade, category, tier, image_url').order('tier').order('name')
     const [{ data: its }, { data: inv }] = await Promise.all([
-      supabase.from('items').select('item_id, name, name_th, grade, category, tier, image_url').order('tier').order('name'),
+      barter ? itemsQ.eq('category', 'barter') : itemsQ,
       supabase.from('user_inventory').select('item_id, qty_have'),
     ])
     const list = (its as Item[] | null) ?? []
@@ -84,7 +88,7 @@ export default function SessionGather() {
     setLoaded(true)
     setLoading(false)
     return list
-  }, [])
+  }, [barter])
 
   function openPanel() {
     setOpen(true)
@@ -127,18 +131,20 @@ export default function SessionGather() {
 
   // Merge scanned candidates into the session lines (summing qty for repeats).
   function mergeScanned(cands: ScanCandidate[], skipped: number, list: Item[]) {
+    let dropped = 0 // matched items not in the (barter-filtered) catalogue
     setLines(prev => {
       const map = new Map(prev.map(l => [l.item.item_id, { ...l }]))
       for (const c of cands) {
         const item = list.find(i => i.item_id === c.item_id)
-        if (!item) continue
+        if (!item) { dropped++; continue }
         const ex = map.get(c.item_id)
         if (ex) ex.gained += c.qty
         else map.set(c.item_id, { item, gained: c.qty, confidence: c.confidence })
       }
       return [...map.values()]
     })
-    setScanNote(skipped > 0 ? `ข้าม ${skipped} ไอเทมที่ระบบไม่รู้จัก` : null)
+    const miss = skipped + dropped
+    setScanNote(miss > 0 ? `ข้าม ${miss} ไอเทมที่ระบบไม่รู้จัก` : null)
   }
 
   async function onScanFile(file: File | undefined) {
@@ -196,15 +202,16 @@ export default function SessionGather() {
   const canSave     = lines.some(l => l.gained > 0) && !saving
 
   async function save() {
-    const payload = lines.filter(l => l.gained > 0).map(l => ({ item_id: l.item.item_id, delta: l.gained }))
+    const payload = lines.filter(l => l.gained > 0).map(l => ({ item_id: l.item.item_id, delta: sign * l.gained }))
     if (payload.length === 0) return
+    const reason = barter ? (out ? 'barter out' : 'barter in') : 'gathering session'
     setSaving(true)
     setError(null)
     try {
       const res = await fetch('/api/inventory/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: payload }),
+        body: JSON.stringify({ items: payload, reason }),
       })
       if (!res.ok) {
         const j = await res.json().catch(() => null)
@@ -213,7 +220,7 @@ export default function SessionGather() {
       // Reflect new totals locally so a re-open shows correct "before" values.
       setHaveMap(prev => {
         const next = new Map(prev)
-        for (const l of lines) next.set(l.item.item_id, (prev.get(l.item.item_id) ?? 0) + l.gained)
+        for (const l of lines) next.set(l.item.item_id, Math.max(0, (prev.get(l.item.item_id) ?? 0) + sign * l.gained))
         return next
       })
       setLines([])
@@ -230,23 +237,38 @@ export default function SessionGather() {
 
   return (
     <>
-      {/* Floating action button — stacked above the tutorial ? button */}
+      {/* Floating action button — barter stacks above the gathering button */}
       <button
         onClick={openPanel}
-        data-tour="session-gather"
-        title="บันทึกของที่หาได้ (Gathering session)"
-        className="group fixed bottom-16 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-[0_4px_20px_rgba(200,168,75,0.35)] transition-transform hover:scale-105 active:scale-95"
-        style={{
+        data-tour={barter ? 'session-barter' : 'session-gather'}
+        title={barter ? 'บันทึกบาร์เตอร์ เข้า/ออก (Barter session)' : 'บันทึกของที่หาได้ (Gathering session)'}
+        className={`group fixed ${barter ? 'bottom-32' : 'bottom-16'} right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95`}
+        style={barter ? {
+          background: 'linear-gradient(135deg, #4a9da8 0%, #2f6e78 100%)',
+          border: '1px solid rgba(140,210,220,0.6)',
+          boxShadow: '0 4px 20px rgba(74,157,168,0.35)',
+        } : {
           background: 'linear-gradient(135deg, #c8a84b 0%, #9a7d34 100%)',
           border: '1px solid rgba(226,201,126,0.6)',
+          boxShadow: '0 4px 20px rgba(200,168,75,0.35)',
         }}
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#060a12" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          {/* basket / haul icon */}
-          <path d="M5 11h14l-1.2 8.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 11Z" />
-          <path d="M9 11 12 4l3 7" />
-          <path d="M3 11h18" />
-        </svg>
+        {barter ? (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#060a12" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            {/* exchange / barter arrows */}
+            <path d="M7 4 3 8l4 4" />
+            <path d="M3 8h14" />
+            <path d="m17 20 4-4-4-4" />
+            <path d="M21 16H7" />
+          </svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#060a12" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            {/* basket / haul icon */}
+            <path d="M5 11h14l-1.2 8.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 11Z" />
+            <path d="M9 11 12 4l3 7" />
+            <path d="M3 11h18" />
+          </svg>
+        )}
         {lines.length > 0 && !open && (
           <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 text-[10px] font-bold text-brass-light ring-1 ring-[rgba(226,201,126,0.6)]">
             {lines.length}
@@ -267,9 +289,9 @@ export default function SessionGather() {
             {/* Header */}
             <div className="flex items-start justify-between gap-3 border-b px-5 py-4" style={{ borderColor: 'var(--brass-dim)' }}>
               <div>
-                <p className="text-[10px] font-display uppercase tracking-[0.25em] text-brass/60">Gathering Session</p>
-                <h2 className="font-display text-lg font-semibold tracking-wider text-brass-light">บันทึกของที่หาได้</h2>
-                <p className="mt-0.5 text-xs text-[#7a8699] font-thai">เพิ่มไอเทมที่เก็บมารอบนี้ ปรับจำนวน แล้วกดบันทึก</p>
+                <p className="text-[10px] font-display uppercase tracking-[0.25em] text-brass/60">{barter ? 'Barter Session' : 'Gathering Session'}</p>
+                <h2 className="font-display text-lg font-semibold tracking-wider text-brass-light">{barter ? 'บันทึกบาร์เตอร์' : 'บันทึกของที่หาได้'}</h2>
+                <p className="mt-0.5 text-xs text-[#7a8699] font-thai">{barter ? 'เลือกโหมดเข้า/ออก เพิ่มไอเทมบาร์เตอร์ แล้วกดบันทึก' : 'เพิ่มไอเทมที่เก็บมารอบนี้ ปรับจำนวน แล้วกดบันทึก'}</p>
               </div>
               <button
                 onClick={closePanel}
@@ -279,13 +301,31 @@ export default function SessionGather() {
               </button>
             </div>
 
+            {/* Input/Output mode toggle — barter only. Output removes from inventory. */}
+            {barter && (
+              <div className="flex gap-2 border-b px-5 py-3" style={{ borderColor: 'var(--brass-dim)' }}>
+                <button
+                  onClick={() => setOut(false)}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold font-thai transition-colors ${!out ? 'border-green-500/60 bg-green-950/40 text-green-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'}`}
+                >
+                  ↓ เข้า (ได้รับ)
+                </button>
+                <button
+                  onClick={() => setOut(true)}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold font-thai transition-colors ${out ? 'border-amber-500/60 bg-amber-950/40 text-amber-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'}`}
+                >
+                  ↑ ออก (ใช้/ขาย)
+                </button>
+              </div>
+            )}
+
             {/* Search / add */}
             <div className="relative border-b px-5 py-3" style={{ borderColor: 'var(--brass-dim)' }}>
               <input
                 ref={searchRef}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder={loading ? 'กำลังโหลดไอเทม…' : 'ค้นหาไอเทมที่หาได้…'}
+                placeholder={loading ? 'กำลังโหลดไอเทม…' : (barter ? 'ค้นหาไอเทมบาร์เตอร์…' : 'ค้นหาไอเทมที่หาได้…')}
                 disabled={loading}
                 className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-2.5 text-sm outline-none placeholder:text-gray-600 focus:border-brass-dim"
               />
@@ -389,7 +429,7 @@ export default function SessionGather() {
                 <div className="space-y-2.5">
                   {lines.map(({ item, gained, confidence }) => {
                     const before = haveMap.get(item.item_id) ?? 0
-                    const after  = before + gained
+                    const after  = Math.max(0, before + sign * gained)
                     return (
                       <div
                         key={item.item_id}
@@ -432,8 +472,8 @@ export default function SessionGather() {
                           <div className="flex items-center gap-2 text-sm tabular-nums">
                             <span className="text-gray-500">{before}</span>
                             <span className="text-gray-600">→</span>
-                            <span className="font-semibold text-green-400">{after}</span>
-                            <span className="text-xs text-green-600/80">(+{gained})</span>
+                            <span className={`font-semibold ${sign < 0 ? 'text-amber-400' : 'text-green-400'}`}>{after}</span>
+                            <span className={`text-xs ${sign < 0 ? 'text-amber-600/80' : 'text-green-600/80'}`}>({sign < 0 ? '−' : '+'}{gained})</span>
                           </div>
 
                           {/* Stepper */}
@@ -470,7 +510,7 @@ export default function SessionGather() {
             <div className="border-t px-5 py-4" style={{ borderColor: 'var(--brass-dim)' }}>
               {error && <p className="mb-2 text-xs text-red-400">{error}</p>}
               <div className="mb-3 flex items-center justify-between text-xs text-gray-500">
-                <span className="font-thai">{lines.length} ไอเทม · รวม +{totalGained}</span>
+                <span className="font-thai">{lines.length} ไอเทม · รวม {sign < 0 ? '−' : '+'}{totalGained}</span>
                 {lines.length > 0 && (
                   <button onClick={resetSession} className="text-gray-600 hover:text-gray-400 font-thai">ล้างทั้งหมด</button>
                 )}

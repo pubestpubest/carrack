@@ -59,6 +59,7 @@ export default function RootLayout({
           </div>
         </footer>
         <SessionGather />
+        <SessionGather barter />
         <Tutorial />
       </body>
     </html>

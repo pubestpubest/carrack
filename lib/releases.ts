@@ -12,6 +12,17 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.21',
+    tag:     'v0.21',
+    date:    '2026-06-23',
+    title:   'Barter sessions & sync your whole inventory from a screenshot',
+    notes: [
+      'New Barter session button (teal, bottom-right): quick-record bartering with an Input / Output toggle — Input adds what you received, Output subtracts what you loaded onto the ship or sold. Search barter goods or scan a screenshot, same as the gathering session.',
+      'New Inventory Sync: upload one inventory screenshot and the scanner reads every item, then shows a review screen (image beside the detected list) with current → scanned for each — edit or untick any row, then overwrite your inventory in one go. Items not in the image are left untouched.',
+      'Reach Inventory Sync from the new “ซิงค์จากภาพ” button on the Inventory page.',
+    ],
+  },
+  {
     version: 'Alpha 0.20',
     tag:     'v0.20',
     date:    '2026-06-23',
