@@ -97,24 +97,26 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
   2. **SCANNER ACCURACY STILL NOT GOOD ENOUGH (user-confirmed 2026-06-24) — needs another tuning pass.**
      Alpha 0.23 lifted recall (28→52 on `docs/raw-inventory-sync.png`) but the user reports results
      are "not quite accurate." User confirmed **all four** modes present: wrong item/variant, wrong
-     qty, missing, and false positives. **Root cause is upstream, partly the grid:** a brightness-
-     projection scan of the test image found the real slot borders at cols ≈2,49,101,152,204,253,
-     306,355,406,457 vs even-division 0,51,103,154,205,257,308,359,411,462 — the grid is **inset and
-     drifts ~5px left by the right edge** (rows ~3px). `autoGrid` (round W/51.5) gets the *count*
-     right but `gridRects` then even-divides the whole image, so crops sit a few px off and clip the
-     icon + qty digit. Detect-and-snap to the actual borders (the projection method) before re-tuning
-     thresholds. Other suspects, in order:
-     - **Wrong-variant mis-ID** — the looser margin gate (`STRONG_SCORE` bypass) accepts ambiguous
-       matches between near-identical icons (plywood tiers, crates, coins). Probable biggest error source.
-     - **Wrong quantities** — `digits.ts` / `digit-templates.json` stack-number OCR may misread.
-     - **Occupancy mis-class** — `innerStats` std<8 / `ITEM_BRIGHT` thresholds in `segment.ts`/`scan.ts`
-       may drop dark icons or keep decorations.
-     - Thresholds live in `lib/vision/scan.ts` (`ACCEPT_SCORE` 0.45 / `STRONG_SCORE` 0.38 /
-       `ACCEPT_MARGIN` 0.04). `autoGrid` pitch 51.5px in `segment.ts`.
-     - **To tune properly:** capture ground truth first. Best next step = label a real screenshot
-       (item+qty per cell) and write a precision/recall harness (extend `scripts/scan-test.ts` /
-       the `calibrate.ts` flow) so changes are measured, not eyeballed. Improving the **matcher**
-       (`phash.ts` composite: phash + color + grade-ring) likely beats further threshold nudging.
+     qty, missing, and false positives.
+   - **Grid drift — FIXED in Alpha 0.24.** A brightness-projection scan found the real slot borders
+     (cols ≈2,49,101,152,204,253,306,355,406,457) sat ~5px left of even-division by the right edge
+     (rows ~3px), so crops clipped icons + qty digits. `gridRects` now fits the real borders
+     (per-axis offset+pitch via `fitLines`/`projections` in `segment.ts`) instead of even-dividing;
+     recovered clipped items (baseline 6→7 real, sync 52→55). Hand-specified grids (margins/gaps)
+     still use uniform division.
+   - **NOW THE #1 ISSUE — matcher "magnet" items.** The harness per-cell report shows the matcher
+     collapsing many distinct icons onto a few catalogue entries: e.g. **"Weasel Leather Coat"
+     matched to 6 different cells**, mostly tiny margins (m≈0.004–0.03). Main wrong-ID / false-positive
+     source. This is **matcher quality** (`phash.ts` composite = phash + color + grade-ring), NOT
+     thresholds or grid — likely needs a more discriminative descriptor or per-item normalization.
+     Lesser suspects: qty OCR (`digits.ts`), occupancy (`innerStats` std<8 / `ITEM_BRIGHT`).
+     Thresholds: `lib/vision/scan.ts` `ACCEPT_SCORE` 0.45 / `STRONG_SCORE` 0.38 / `ACCEPT_MARGIN` 0.04.
+   - **HARNESS — use it, don't eyeball.** `scripts/scan-eval.ts` (env from `.env.local`) prints a
+     per-cell report and scores precision/recall/qty vs `scripts/scan-truth.json`;
+     `scripts/scan-montage.ts` crops every cell into one PNG for labeling. `scan.ts` now exports
+     `scanCells` (per-cell detail; `scanImage` is a thin merge over it). **`scan-truth.json` is seeded
+     from a scan and MUST be hand-corrected** (authoritative item names + quantities) before the
+     precision/recall numbers mean anything — until then the score is self-referential (~100%).
 
 **Ships feature: DONE, live, verified.**
 - Ship items (86–92) + hull build chain (recipes 18–23) seeded live; each ship's build recipe
@@ -138,6 +140,16 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
 
 ## Log
 
+- **2026-06-24** — Released **Alpha 0.24** (tag `v0.24`): **grid-snap + scanner eval harness**.
+  (1) `gridRects` now fits the real slot borders (offset+pitch per axis via brightness projection,
+  `fitLines`/`projections` in `segment.ts`) instead of even-dividing the image — fixes the ~5px
+  edge drift that clipped icons/digits (baseline 6→7 real items, sync 52→55). (2) Refactored
+  `scan.ts`: new `scanCells` returns per-cell detail; `scanImage` is a thin merge (external behavior
+  unchanged). (3) Added harness: `scripts/scan-eval.ts` (per-cell report + precision/recall/qty vs
+  `scripts/scan-truth.json`) and `scripts/scan-montage.ts` (cell montage for labeling). The eval
+  surfaced the real accuracy problem: matcher **magnet items** (Weasel Leather Coat ×6) — a
+  `phash.ts` matcher-quality issue, the next thing to fix. `scan-truth.json` is seeded and needs
+  user correction. `tsc`/`build` clean.
 - **2026-06-24** — Released **Alpha 0.23** (tag `v0.23`): **scanner recall + review order**.
   (1) The acceptance gate in `lib/vision/scan.ts` rejected a match if `margin <= ACCEPT_MARGIN`
   *even when the absolute score was excellent* (e.g. s=0.084 dropped because a sibling sat 0.09

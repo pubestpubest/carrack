@@ -12,6 +12,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.24',
+    tag:     'v0.24',
+    date:    '2026-06-24',
+    title:   'Scanner locks onto your inventory grid',
+    notes: [
+      'The screenshot scanner now finds the real slot boundaries in your capture instead of assuming the grid fills the image edge-to-edge. Previously a few pixels of drift clipped icons and stack numbers near the edges; now each slot is read cleanly, recovering items that were being cut off.',
+    ],
+  },
+  {
     version: 'Alpha 0.23',
     tag:     'v0.23',
     date:    '2026-06-24',

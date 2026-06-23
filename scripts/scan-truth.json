@@ -1,0 +1,226 @@
+{
+  "_note": "Ground truth for scanner eval. Seeded from the CURRENT scan output — CORRECT IT: fix wrong names, fix quantities, delete items that aren't really in the image, and ADD any real catalogue items the scanner missed. Names are English catalogue names.",
+  "image": "docs/raw-inventory-sync.png",
+  "items": [
+    {
+      "name": "Amethyst Fragment",
+      "qty": 1
+    },
+    {
+      "name": "Ancient Orders",
+      "qty": 34
+    },
+    {
+      "name": "Ancient Urn Piece",
+      "qty": 53
+    },
+    {
+      "name": "Balanced Stone Pagoda",
+      "qty": 55
+    },
+    {
+      "name": "Bamboo Sap Crate",
+      "qty": 583
+    },
+    {
+      "name": "Big Stone Slab",
+      "qty": 56
+    },
+    {
+      "name": "Blue Candle Bundle",
+      "qty": 41
+    },
+    {
+      "name": "Boatman's Manual",
+      "qty": 1
+    },
+    {
+      "name": "Bronze Candlestick",
+      "qty": 23
+    },
+    {
+      "name": "Cherry Tree Seed Pouch",
+      "qty": 26
+    },
+    {
+      "name": "Conch Shell Ornament",
+      "qty": 5
+    },
+    {
+      "name": "Cron Castle Gold Coin",
+      "qty": 55
+    },
+    {
+      "name": "Deep Sea Glue",
+      "qty": 1
+    },
+    {
+      "name": "Enhanced Island Tree Plywood",
+      "qty": 6
+    },
+    {
+      "name": "Epheria Carrack: Tolo Prow",
+      "qty": 34
+    },
+    {
+      "name": "Fancy Camel Hide",
+      "qty": 8
+    },
+    {
+      "name": "Fertile Soil",
+      "qty": 379
+    },
+    {
+      "name": "Filtered Drinking Water",
+      "qty": 1
+    },
+    {
+      "name": "Giant Fish Bone",
+      "qty": 10
+    },
+    {
+      "name": "Glittering Pearl Gem",
+      "qty": 75
+    },
+    {
+      "name": "Golden Sand",
+      "qty": 24
+    },
+    {
+      "name": "Green Salt Lump",
+      "qty": 19
+    },
+    {
+      "name": "Headless Dragon Figurine",
+      "qty": 30
+    },
+    {
+      "name": "High-quality Ink-scented Box",
+      "qty": 546
+    },
+    {
+      "name": "Islanders' Lunchbox",
+      "qty": 39
+    },
+    {
+      "name": "Lopters Fishnet",
+      "qty": 43
+    },
+    {
+      "name": "Marine Knights' Helm",
+      "qty": 23
+    },
+    {
+      "name": "Marine Knights' Spear",
+      "qty": 24
+    },
+    {
+      "name": "Miniature Arehaza Lighthouse",
+      "qty": 174
+    },
+    {
+      "name": "Monster Tentacle",
+      "qty": 48
+    },
+    {
+      "name": "Narvo Sea Cucumber",
+      "qty": 45
+    },
+    {
+      "name": "Naval Ration",
+      "qty": 52
+    },
+    {
+      "name": "Old Chest with Gold Coins",
+      "qty": 57
+    },
+    {
+      "name": "Opulent Marble",
+      "qty": 36
+    },
+    {
+      "name": "Opulent Thread Spool",
+      "qty": 28
+    },
+    {
+      "name": "Panacea",
+      "qty": 21
+    },
+    {
+      "name": "Pirate Gold Coin",
+      "qty": 51
+    },
+    {
+      "name": "Pirate Ship Mast",
+      "qty": 32
+    },
+    {
+      "name": "Pirate's Key",
+      "qty": 24
+    },
+    {
+      "name": "Pirates' Supply Box",
+      "qty": 52
+    },
+    {
+      "name": "Raft Toy",
+      "qty": 39
+    },
+    {
+      "name": "Rare Herb Pile",
+      "qty": 36
+    },
+    {
+      "name": "Round Knife",
+      "qty": 32
+    },
+    {
+      "name": "Scout Binoculars",
+      "qty": 52
+    },
+    {
+      "name": "Sea Survival Kit",
+      "qty": 49
+    },
+    {
+      "name": "Seashell Deco",
+      "qty": 1
+    },
+    {
+      "name": "Sharp Safflower Blade Crate",
+      "qty": 35
+    },
+    {
+      "name": "Solidified Lava",
+      "qty": 80
+    },
+    {
+      "name": "Stained Seagull Figurine",
+      "qty": 29
+    },
+    {
+      "name": "Stalactite Fragment",
+      "qty": 34
+    },
+    {
+      "name": "Stolen Pirate Dagger",
+      "qty": 28
+    },
+    {
+      "name": "Supreme Oyster Box",
+      "qty": 35
+    },
+    {
+      "name": "Top-Quality Gamtu Crate",
+      "qty": 42
+    },
+    {
+      "name": "Torn Pirate Treasure Map",
+      "qty": 55
+    },
+    {
+      "name": "Weasel Leather Coat",
+      "qty": 188
+    }
+  ]
+}

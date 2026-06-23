@@ -17,22 +17,72 @@ export function autoGrid(W: number, H: number): GridSpec {
   return { cols: Math.max(1, Math.round(W / SLOT_PX)), rows: Math.max(1, Math.round(H / SLOT_PX)) }
 }
 
+// Fit n+1 evenly-spaced border lines to the dark inter-slot gaps in a brightness
+// projection. Real captures are inset and drift a few px, so even-dividing the
+// whole image lands crops a little off — enough to clip icons and qty digits.
+// We jointly fit one (offset, pitch) per axis (robust to noise; no per-line
+// overfit) by minimizing total brightness along the predicted border lines.
+function fitLines(proj: number[], n: number): number[] {
+  const L = proj.length
+  const cw = L / n
+  let best = { score: Infinity, o: 0, p: cw }
+  for (let p = cw * 0.95; p <= cw * 1.05; p += 0.25) {
+    for (let o = -8; o <= 8; o += 0.5) {
+      let s = 0
+      for (let i = 0; i <= n; i++) {
+        const x = Math.round(o + i * p)
+        s += x >= 0 && x < L ? proj[x] : 255 // penalize lines that fall off the image
+      }
+      if (s < best.score) best = { score: s, o, p }
+    }
+  }
+  const lines: number[] = []
+  for (let i = 0; i <= n; i++) lines.push(Math.max(0, Math.min(L, Math.round(best.o + i * best.p))))
+  return lines
+}
+
+// Per-column / per-row mean brightness.
+async function projections(input: Buffer, W: number, H: number) {
+  const g = await sharp(input).greyscale().raw().toBuffer()
+  const col = new Array(W).fill(0), row = new Array(H).fill(0)
+  for (let y = 0; y < H; y++) {
+    const base = y * W
+    for (let x = 0; x < W; x++) { const v = g[base + x]; col[x] += v; row[y] += v }
+  }
+  for (let x = 0; x < W; x++) col[x] /= H
+  for (let y = 0; y < H; y++) row[y] /= W
+  return { col, row }
+}
+
 export async function gridRects(input: Buffer, spec?: GridSpec) {
   const meta = await sharp(input).metadata()
   const W = meta.width ?? 0
   const H = meta.height ?? 0
-  const { cols, rows, marginX = 0, marginY = 0, gapX = 0, gapY = 0 } = spec ?? autoGrid(W, H)
-  const cw = (W - 2 * marginX - (cols - 1) * gapX) / cols
-  const ch = (H - 2 * marginY - (rows - 1) * gapY) / rows
+  const { cols, rows } = spec ?? autoGrid(W, H)
+
+  // Explicit margins/gaps mean a hand-specified grid: keep the uniform division.
+  const explicit = spec && (spec.marginX || spec.marginY || spec.gapX || spec.gapY)
+  let xs: number[], ys: number[]
+  if (explicit) {
+    const cw = (W - 2 * (spec!.marginX ?? 0) - (cols - 1) * (spec!.gapX ?? 0)) / cols
+    const ch = (H - 2 * (spec!.marginY ?? 0) - (rows - 1) * (spec!.gapY ?? 0)) / rows
+    xs = Array.from({ length: cols + 1 }, (_, c) => Math.round((spec!.marginX ?? 0) + c * (cw + (spec!.gapX ?? 0))))
+    ys = Array.from({ length: rows + 1 }, (_, r) => Math.round((spec!.marginY ?? 0) + r * (ch + (spec!.gapY ?? 0))))
+  } else {
+    const { col, row } = await projections(input, W, H)
+    xs = fitLines(col, cols)
+    ys = fitLines(row, rows)
+  }
+
   const rects: CellRect[] = []
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       rects.push({
         row: r, col: c,
-        left:   Math.round(marginX + c * (cw + gapX)),
-        top:    Math.round(marginY + r * (ch + gapY)),
-        width:  Math.round(cw),
-        height: Math.round(ch),
+        left:   xs[c],
+        top:    ys[r],
+        width:  Math.max(1, xs[c + 1] - xs[c]),
+        height: Math.max(1, ys[r + 1] - ys[r]),
       })
     }
   }

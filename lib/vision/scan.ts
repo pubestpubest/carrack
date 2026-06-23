@@ -40,19 +40,31 @@ export async function loadReferences(items: ItemMeta[]): Promise<RefItem[]> {
   return refs
 }
 
-export async function scanImage(buf: Buffer, refs: RefItem[], grid?: GridSpec): Promise<ScanResult> {
-  const { rects } = await gridRects(buf, grid)
-  const found: ScanCandidate[] = []
-  let skipped = 0
+// Per-cell scan detail — what scanImage merges away. Used by the eval harness
+// (scripts/scan-eval.ts) to measure occupancy, quantity, and identity separately.
+export type CellResult = {
+  row: number; col: number
+  state: 'empty' | 'locked' | 'item'
+  grade: string | null
+  match: RefItem | null // best candidate (even if not accepted)
+  score: number         // best composite score, lower = better (Infinity if not matched)
+  margin: number        // lead over the runner-up
+  accepted: boolean
+  qty: number | null    // read only when accepted
+}
 
+export async function scanCells(buf: Buffer, refs: RefItem[], grid?: GridSpec): Promise<CellResult[]> {
+  const { rects } = await gridRects(buf, grid)
+  const out: CellResult[] = []
   for (const r of rects) {
+    const base = { row: r.row, col: r.col, grade: null as string | null, match: null as RefItem | null, score: Infinity, margin: Infinity, accepted: false, qty: null as number | null }
     const cell = await cropCell(buf, r)
     const { mean, std } = await innerStats(cell)
-    if (std < 8) continue // empty slot
+    if (std < 8) { out.push({ ...base, state: 'empty' }); continue } // empty slot
 
     const grade = await extractGrade(cell)
     // Locked padlock / decoration: no colored ring and dark → not an item attempt.
-    if (!grade && mean < ITEM_BRIGHT) continue
+    if (!grade && mean < ITEM_BRIGHT) { out.push({ ...base, state: 'locked' }); continue }
 
     const variants = await captureVariants(cell)
     const ranked = refs
@@ -63,13 +75,25 @@ export async function scanImage(buf: Buffer, refs: RefItem[], grid?: GridSpec): 
     // Reject only weak matches, or mediocre ones too close to the runner-up.
     // A confident absolute score (< STRONG_SCORE) is accepted even if a similar
     // item sits close behind — the margin gate was dropping near-perfect matches.
-    if (ranked[0].s >= ACCEPT_SCORE || (ranked[0].s >= STRONG_SCORE && margin <= ACCEPT_MARGIN)) { skipped++; continue }
+    const accepted = !(ranked[0].s >= ACCEPT_SCORE || (ranked[0].s >= STRONG_SCORE && margin <= ACCEPT_MARGIN))
+    const qty = accepted ? (readQuantity(await extractGlyphs(cell), templates) ?? 1) : null
+    out.push({ ...base, state: 'item', grade, match: ranked[0].ref, score: +ranked[0].s.toFixed(3), margin: +margin.toFixed(3), accepted, qty })
+  }
+  return out
+}
 
-    const qty = readQuantity(await extractGlyphs(cell), templates) ?? 1
-    const m = ranked[0].ref
+export async function scanImage(buf: Buffer, refs: RefItem[], grid?: GridSpec): Promise<ScanResult> {
+  const cells = await scanCells(buf, refs, grid)
+  const found: ScanCandidate[] = []
+  let skipped = 0
+
+  for (const c of cells) {
+    if (c.state !== 'item' || !c.match) continue
+    if (!c.accepted) { skipped++; continue }
+    const m = c.match
     found.push({
       item_id: m.item_id, name: m.name, name_th: m.name_th, grade: m.grade,
-      image_url: m.image_url, qty, confidence: +(1 - ranked[0].s).toFixed(2),
+      image_url: m.image_url, qty: c.qty ?? 1, confidence: +(1 - c.score).toFixed(2),
     })
   }
 
