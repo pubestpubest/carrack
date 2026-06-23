@@ -96,8 +96,14 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
   1. `weight`/Versatile-Tonnage was NOT scraped; add a nullable column later if cargo math is wanted.
   2. **SCANNER ACCURACY STILL NOT GOOD ENOUGH (user-confirmed 2026-06-24) — needs another tuning pass.**
      Alpha 0.23 lifted recall (28→52 on `docs/raw-inventory-sync.png`) but the user reports results
-     are "not quite accurate." No per-item ground truth captured yet, so the failure mode isn't
-     pinned down. Likely suspects, in order:
+     are "not quite accurate." User confirmed **all four** modes present: wrong item/variant, wrong
+     qty, missing, and false positives. **Root cause is upstream, partly the grid:** a brightness-
+     projection scan of the test image found the real slot borders at cols ≈2,49,101,152,204,253,
+     306,355,406,457 vs even-division 0,51,103,154,205,257,308,359,411,462 — the grid is **inset and
+     drifts ~5px left by the right edge** (rows ~3px). `autoGrid` (round W/51.5) gets the *count*
+     right but `gridRects` then even-divides the whole image, so crops sit a few px off and clip the
+     icon + qty digit. Detect-and-snap to the actual borders (the projection method) before re-tuning
+     thresholds. Other suspects, in order:
      - **Wrong-variant mis-ID** — the looser margin gate (`STRONG_SCORE` bypass) accepts ambiguous
        matches between near-identical icons (plywood tiers, crates, coins). Probable biggest error source.
      - **Wrong quantities** — `digits.ts` / `digit-templates.json` stack-number OCR may misread.
