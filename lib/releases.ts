@@ -12,6 +12,17 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.19',
+    tag:     'v0.19',
+    date:    '2026-06-23',
+    title:   'Barter Hold — track your sea-trade goods',
+    notes: [
+      'New Barter Hold page: track your bartering trade goods, racked into tier shelves (Tier I–VII) and colored by grade, with held cargo highlighted and a quick − / + stepper to update quantities.',
+      'Added 118 barter trade items (Thai + English names, grades, icons) to the catalogue.',
+      'New brass “Barter” entry in the navbar — and the whole navbar got a size bump for easier reading.',
+    ],
+  },
+  {
     version: 'Alpha 0.18',
     tag:     'v0.18',
     date:    '2026-06-23',

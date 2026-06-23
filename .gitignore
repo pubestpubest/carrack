@@ -24,3 +24,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scraper raw-HTML cache (scripts/scrape-barter-items.mjs)
+scripts/cache/

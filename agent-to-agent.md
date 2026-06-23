@@ -28,6 +28,11 @@ no longer true.
 - **`.env.local`** holds the Supabase URL + anon key for local runs/scripts; it's git-ignored.
   Catalogue tables are `public_read`, so anon-key scripts read recipes/items/ingredients fine
   (user inventory needs auth → empty under anon, which is great for testing full expansion).
+- **Supabase MCP can be unreachable** ("connector isn't responding"). Fallback for read-only
+  catalogue checks: query the REST API directly —
+  `curl "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/items?select=grade" -H "apikey: $KEY" -H "Authorization: Bearer $KEY"`
+  (load both from `.env.local`). Distinct values reveal what the CHECKs de-facto allow without
+  needing `pg_constraint`. Can't do DDL this way — `apply_migration` still needs the MCP.
 
 ## How to verify gap-analysis work
 
@@ -37,7 +42,37 @@ no longer true.
   truncation, and the Carrack→hull requirement. Extend it whenever you touch
   `lib/gap-analysis.ts`.
 
-## Current state (2026-06-22)
+## Current state (2026-06-23)
+
+**Barter feature: items SEEDED to prod (2026-06-23); scraper + assets NOT committed; UI not built.**
+- New scraper `scripts/scrape-barter-items.mjs`: iterates bdocodex item IDs, pulls name/name_th
+  from EN+TH `og:title`, grade from the `grade_frame_N` class, barter level from the `[Level N]`
+  prefix, icon from `og:image`. `--images` downloads + converts webp→png via `sharp` into
+  `public/images/barter/<id>.png`. Raw HTML cached in `scripts/cache/` (now git-ignored).
+  Output **replaces** (not appends) `barter-items.json`.
+- Scraped ranges **800001–800070 + 800201–800248** → `barter-items.json` (118 items, 0 missing)
+  + 118 PNGs. Grade spread: 14 white / 14 green / 14 blue / 14 yellow / 62 orange. Level→grade is
+  consistent (Lv1 white … Lv5–7 orange).
+- **Planned model (decided, not yet applied): fold barter into `items`, `category='barter'`** —
+  reuses `user_inventory`/`inventory_log`/`trade_exchanges`/scanner/gap-analysis for free. Map
+  scrape `level`→`items.tier`; `crow_coin_price`=NULL. Use the **real BDO id (800001+) as `item_id`**.
+- **Live schema verified 2026-06-23 (anon REST — MCP was down):** prod `items.grade` already allows
+  all 6 grades (white/green/blue/yellow/orange/red present), so **no grade CHECK change**. `category`
+  has license/equipment/material/ship/currency → **needs `'barter'` added** to the CHECK (one ALTER).
+  `max(item_id)=103` → 800001+ is collision-free. `trade_exchanges.tier_required` is `BETWEEN 1 AND 5`
+  but barter goes to **Lv7** — widen it only when modeling barter *routes* (not needed for the item seed).
+- **DONE:** migration `add_barter_items` applied to prod (`astqacmwpicgwplptcoi`) — widened the
+  `items_category_check` to include `'barter'` + upserted all 118 (`ON CONFLICT (item_id) DO UPDATE`,
+  re-runnable). Verified: 118 rows, 0 missing th/img, grades 14/14/14/14/62, ids 800001–800248.
+  No `database.ts` regen needed (`category` is typed `string`).
+- **STILL PENDING:**
+  1. `public/images/barter/*.png` (118) + `barter-items.json` + the scraper are **uncommitted** —
+     the seeded `image_url`s (`/images/barter/<id>.png`) will **404 in prod until pushed** (assets
+     ship in the Docker image's `public/`). Push to deploy them.
+  2. Build the barter inventory UI — user wants **session input/output with the CV scanner** (reuse
+     `lib/vision/*`). Note the scanner builds references from local catalogue icons, so the new
+     barter PNGs must be present for it to recognize them.
+  3. `weight`/Versatile-Tonnage was NOT scraped; add a nullable column later if cargo math is wanted.
 
 **Ships feature: DONE, live, verified.**
 - Ship items (86–92) + hull build chain (recipes 18–23) seeded live; each ship's build recipe
@@ -61,6 +96,20 @@ no longer true.
 
 ## Log
 
+- **2026-06-23** — Barter items SEEDED: wrote `scripts/scrape-barter-items.mjs`, scraped
+  800001–800070 & 800201–800248 (118 items + images), and applied migration `add_barter_items`
+  to prod (user-approved) — widened `items_category_check` to add `'barter'` + upserted 118 rows
+  (`category='barter'`, `tier`=barter level, `image_url=/images/barter/<id>.png`, `crow_coin_price`
+  NULL). Verified. Scraper + JSON + PNGs still uncommitted; images 404 in prod until pushed. Next:
+  barter inventory UI with the CV scanner.
+- **2026-06-23** — Released **Alpha 0.18** (tag `v0.18`): added `app/icon.svg` favicon (brass
+  anchor on navy chart-grid tile; Next App Router auto-wires it).
+- **2026-06-23** — Released **Alpha 0.17** (tag `v0.17`): (1) fixed the dashboard `goalVariant`
+  in `app/page.tsx` — it only matched the 4 Carrack names, so a hull-ship goal (Sailboat/Frigate/
+  Caravel/Galleass) rendered "No active goal"; extended the name→node map (`ShipTree`'s
+  `VARIANT_TO_NODE` already supported them). (2) Goals page redesign: active goal is now a large
+  hero card (`GoalHero` in `app/goals/goals-list.tsx`), paused goals stay compact rows; widened
+  page to `max-w-4xl`, rethemed header to brass; added `hero-rise`/`sheen` keyframes to `globals.css`.
 - **2026-06-22** — Released **Alpha 0.16** (tag `v0.16`): gated the onboarding `Tutorial`
   (mounted globally in `app/layout.tsx`) on auth — it was popping up on `/auth/*` for logged-out
   visitors. Uses `supabase.auth.onAuthStateChange` (not a one-shot `getUser`) because the root
