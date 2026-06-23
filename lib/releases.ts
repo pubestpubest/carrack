@@ -12,6 +12,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.25',
+    tag:     'v0.25',
+    date:    '2026-06-24',
+    title:   'Barter Hold matches in-game order',
+    notes: [
+      'Each tier shelf on the Barter Hold now lists goods in the same order as the in-game barter window (newest item ID first) instead of by quantity, so it lines up with what you see in the game.',
+    ],
+  },
+  {
     version: 'Alpha 0.24',
     tag:     'v0.24',
     date:    '2026-06-24',

@@ -94,8 +94,8 @@ export default function BarterHold({ rows, thresholds }: { rows: BarterRow[]; th
   const grouped = useMemo(() => {
     const m = new Map<number, BarterRow[]>()
     for (const r of filtered) (m.get(r.tier) ?? m.set(r.tier, []).get(r.tier)!).push(r)
-    // sort each shelf by quantity owned, high → low (then name)
-    for (const list of m.values()) list.sort((a, b) => actual(b) - actual(a) || a.name.localeCompare(b.name))
+    // sort each shelf by item_id high → low, matching in-game order
+    for (const list of m.values()) list.sort((a, b) => b.item_id - a.item_id)
     return m
   }, [filtered, saved]) // eslint-disable-line react-hooks/exhaustive-deps
 

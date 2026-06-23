@@ -27,3 +27,4 @@ next-env.d.ts
 
 # scraper raw-HTML cache (scripts/scrape-barter-items.mjs)
 scripts/cache/
+scan-annotated.png

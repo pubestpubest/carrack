@@ -140,6 +140,8 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
 
 ## Log
 
+- **2026-06-24** — Released **Alpha 0.25** (tag `v0.25`): Barter Hold tier shelves now sort by
+  `item_id` descending (in-game order) instead of by quantity owned — `app/barter/barter-grid.tsx:98`.
 - **2026-06-24** — Released **Alpha 0.24** (tag `v0.24`): **grid-snap + scanner eval harness**.
   (1) `gridRects` now fits the real slot borders (offset+pitch per axis via brightness projection,
   `fitLines`/`projections` in `segment.ts`) instead of even-dividing the image — fixes the ~5px
