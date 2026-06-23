@@ -12,6 +12,17 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.20',
+    tag:     'v0.20',
+    date:    '2026-06-23',
+    title:   'Barter Hold — stock health & tidier crates',
+    notes: [
+      'Set a stock-health target per tier: goods below your “red” number show red (restock), below “green” show yellow, and at or above show green — fully configurable per tier from the new ⚙ Thresholds panel.',
+      'Each tier shelf now sorts by quantity owned (most stocked first) and shows a green/yellow/red health tally.',
+      'Tightened the item cards so the icons render sharp instead of upscaled.',
+    ],
+  },
+  {
     version: 'Alpha 0.19',
     tag:     'v0.19',
     date:    '2026-06-23',

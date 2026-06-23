@@ -9,7 +9,7 @@ export default async function BarterPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ data: items }, { data: inventory }] = await Promise.all([
+  const [{ data: items }, { data: inventory }, { data: thresholds }] = await Promise.all([
     supabase
       .from('items')
       .select('item_id, name, name_th, grade, tier, image_url')
@@ -17,6 +17,7 @@ export default async function BarterPage() {
       .order('tier')
       .order('name'),
     supabase.from('user_inventory').select('item_id, qty_have').eq('user_id', user.id),
+    supabase.from('user_barter_thresholds').select('tier, crit, warn').eq('user_id', user.id),
   ])
 
   const invMap = new Map((inventory ?? []).map(i => [i.item_id, i.qty_have]))
@@ -30,5 +31,5 @@ export default async function BarterPage() {
     qty_have: invMap.get(it.item_id) ?? 0,
   }))
 
-  return <BarterHold rows={rows} />
+  return <BarterHold rows={rows} thresholds={thresholds ?? []} />
 }

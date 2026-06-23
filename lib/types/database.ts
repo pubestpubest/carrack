@@ -91,6 +91,12 @@ export type Database = {
           { foreignKeyName: "user_acquisition_preferences_method_id_fkey"; columns: ["method_id"]; isOneToOne: false; referencedRelation: "acquisition_methods"; referencedColumns: ["method_id"] },
         ]
       }
+      user_barter_thresholds: {
+        Row: { user_id: string; tier: number; crit: number; warn: number }
+        Insert: { user_id: string; tier: number; crit?: number; warn?: number }
+        Update: { user_id?: string; tier?: number; crit?: number; warn?: number }
+        Relationships: []
+      }
       user_goals: {
         Row: { created_at: string; current_stage_id: number | null; id: number; is_active: boolean; item_id: number | null; target_qty: number; use_daily_quests: boolean; user_id: string }
         Insert: { created_at?: string; current_stage_id?: number | null; id?: number; is_active?: boolean; item_id?: number | null; target_qty?: number; use_daily_quests?: boolean; user_id: string }
