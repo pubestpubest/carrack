@@ -74,6 +74,20 @@
   /* Thai font */
   .font-thai { font-family: var(--font-niramit), 'Niramit', sans-serif; }
 
+  /* Hero reveal on load — the active goal rises into place */
+  @keyframes hero-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-hero-rise { animation: hero-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+  /* Brass sheen sweeping across the active progress bar */
+  @keyframes sheen {
+    0%        { transform: translateX(-150%); }
+    55%, 100% { transform: translateX(320%); }
+  }
+  .animate-sheen { animation: sheen 3s ease-in-out infinite; }
+
   /* Brass text utility */
   .text-brass       { color: var(--brass); }
   .text-brass-light { color: var(--brass-light); }

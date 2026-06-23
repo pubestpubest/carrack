@@ -42,11 +42,20 @@ export default async function DashboardPage() {
     ? (allItems ?? []).find(i => i.item_id === activeGoal.item_id)
     : null
 
+  // Map the goal's target item to a ship-tree node variant. Carracks first,
+  // then hull ships (Sailboat/Frigate/Caravel/Galleass), which became valid
+  // goals in Alpha 0.11. Modified hulls fall back to their base node.
+  const goalName = goalItem?.name?.toLowerCase() ?? ''
   const goalVariant =
-    goalItem?.name?.toLowerCase().includes('advance')  ? 'advance'
-    : goalItem?.name?.toLowerCase().includes('balance')  ? 'balance'
-    : goalItem?.name?.toLowerCase().includes('valor')    ? 'valor'
-    : goalItem?.name?.toLowerCase().includes('volante')  ? 'volante'
+    goalName.includes('advance')  ? 'advance'
+    : goalName.includes('balance')  ? 'balance'
+    : goalName.includes('valor')    ? 'valor'
+    : goalName.includes('volante')  ? 'volante'
+    : goalName.includes('galleass') ? 'galleass'
+    : goalName.includes('caravel')  ? 'caravel'
+    : goalName.includes('frigate')  ? 'frigate'
+    : goalName.includes('sailboat') ? 'sailboat'
+    : goalName.includes('batali')   ? 'none'
     : null
 
   const stopAtItemId = currentStage

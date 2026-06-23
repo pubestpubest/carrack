@@ -77,17 +77,28 @@ export default async function GoalsPage() {
   })
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold">Goals</h1>
-          <p className="mt-0.5 text-xs text-gray-500">One ship goal and one equipment goal can be active at a time — pause others to switch.</p>
+          <p className="mb-1 font-display text-xs uppercase tracking-[0.25em]" style={{ color: 'rgba(200,168,75,0.5)' }}>
+            Expedition Roster
+          </p>
+          <h1 className="font-display text-3xl tracking-wider" style={{ color: 'var(--brass-light)' }}>Goals</h1>
+          <p className="mt-1 text-sm text-[#7a7464]">One ship goal and one equipment goal can be active at a time — pause others to switch.</p>
         </div>
         <div className="flex gap-3">
-          <Link href="/goals/new" className="rounded-xl border border-gray-700 px-4 py-2 text-sm hover:border-gray-500">
+          <Link
+            href="/goals/new"
+            className="rounded-xl border px-4 py-2 text-sm font-display tracking-wider transition-colors text-[#9fb0c4] hover:text-[#c8c3b4]"
+            style={{ borderColor: 'rgba(200,168,75,0.20)' }}
+          >
             + Ship Goal
           </Link>
-          <Link href="/goals/new?type=equipment" className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500">
+          <Link
+            href="/goals/new?type=equipment"
+            className="rounded-xl px-4 py-2 text-sm font-display font-semibold tracking-wider transition-all hover:brightness-110"
+            style={{ background: 'linear-gradient(135deg, #c8a84b 0%, #9a7d34 100%)', color: '#060a12', boxShadow: '0 2px 12px rgba(200,168,75,0.25)' }}
+          >
             + Equipment Goal
           </Link>
         </div>

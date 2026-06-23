@@ -12,6 +12,16 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.17',
+    tag:     'v0.17',
+    date:    '2026-06-23',
+    title:   'Dashboard reads ship goals · Goals page redesign',
+    notes: [
+      'Fixed the dashboard showing “No active goal” when your active goal was a hull ship (Sailboat, Frigate, Caravel, or Galleass) — it now recognizes every ship goal, not just the four Carracks, and lights up the matching node on the progression tree.',
+      'Redesigned the Goals page: your active goal now stands out as a large hero card — bigger portrait, oversized progress, and full-size actions — while paused goals stay as compact rows. Less wasted space, clearer focus.',
+    ],
+  },
+  {
     version: 'Alpha 0.16',
     tag:     'v0.16',
     date:    '2026-06-22',
