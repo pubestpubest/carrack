@@ -94,9 +94,21 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
   shipped (Barter Hold page in Alpha 0.19–0.20, Barter session + Inventory Sync in Alpha 0.21).
 - **STILL PENDING:**
   1. `weight`/Versatile-Tonnage was NOT scraped; add a nullable column later if cargo math is wanted.
-  2. Scanner tested on a real 9×10 screenshot (`docs/raw-inventory-sync.png`): 28 solid matches
-     (conf 0.67–0.89), 45 cells skipped = items not in the 212-item catalogue (correct). Barter-icon
-     accuracy specifically still unconfirmed (that test image is general trade goods, not the 118 barter PNGs).
+  2. **SCANNER ACCURACY STILL NOT GOOD ENOUGH (user-confirmed 2026-06-24) — needs another tuning pass.**
+     Alpha 0.23 lifted recall (28→52 on `docs/raw-inventory-sync.png`) but the user reports results
+     are "not quite accurate." No per-item ground truth captured yet, so the failure mode isn't
+     pinned down. Likely suspects, in order:
+     - **Wrong-variant mis-ID** — the looser margin gate (`STRONG_SCORE` bypass) accepts ambiguous
+       matches between near-identical icons (plywood tiers, crates, coins). Probable biggest error source.
+     - **Wrong quantities** — `digits.ts` / `digit-templates.json` stack-number OCR may misread.
+     - **Occupancy mis-class** — `innerStats` std<8 / `ITEM_BRIGHT` thresholds in `segment.ts`/`scan.ts`
+       may drop dark icons or keep decorations.
+     - Thresholds live in `lib/vision/scan.ts` (`ACCEPT_SCORE` 0.45 / `STRONG_SCORE` 0.38 /
+       `ACCEPT_MARGIN` 0.04). `autoGrid` pitch 51.5px in `segment.ts`.
+     - **To tune properly:** capture ground truth first. Best next step = label a real screenshot
+       (item+qty per cell) and write a precision/recall harness (extend `scripts/scan-test.ts` /
+       the `calibrate.ts` flow) so changes are measured, not eyeballed. Improving the **matcher**
+       (`phash.ts` composite: phash + color + grade-ring) likely beats further threshold nudging.
 
 **Ships feature: DONE, live, verified.**
 - Ship items (86–92) + hull build chain (recipes 18–23) seeded live; each ship's build recipe
