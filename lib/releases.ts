@@ -12,6 +12,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.22',
+    tag:     'v0.22',
+    date:    '2026-06-23',
+    title:   'Screenshot scanner now reads full-size inventories',
+    notes: [
+      'Fixed the inventory scanner (used by Inventory Sync and the gathering/barter sessions): it assumed a fixed 5×7 grid, so anything but a small bag came back empty. It now detects the grid size from the screenshot, reading full inventories — a 9×10 capture now finds dozens of items instead of none.',
+    ],
+  },
+  {
     version: 'Alpha 0.21',
     tag:     'v0.21',
     date:    '2026-06-23',

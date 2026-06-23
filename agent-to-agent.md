@@ -94,8 +94,9 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
   shipped (Barter Hold page in Alpha 0.19–0.20, Barter session + Inventory Sync in Alpha 0.21).
 - **STILL PENDING:**
   1. `weight`/Versatile-Tonnage was NOT scraped; add a nullable column later if cargo math is wanted.
-  2. Neither new CV feature is **user-tested against a real screenshot** — scanner accuracy on barter
-     icons (`ACCEPT_SCORE`/`ACCEPT_MARGIN` in `lib/vision/scan.ts`) is unverified. Watch for misreads.
+  2. Scanner tested on a real 9×10 screenshot (`docs/raw-inventory-sync.png`): 28 solid matches
+     (conf 0.67–0.89), 45 cells skipped = items not in the 212-item catalogue (correct). Barter-icon
+     accuracy specifically still unconfirmed (that test image is general trade goods, not the 118 barter PNGs).
 
 **Ships feature: DONE, live, verified.**
 - Ship items (86–92) + hull build chain (recipes 18–23) seeded live; each ship's build recipe
@@ -119,6 +120,14 @@ committed barter PNGs are matchable. CV plumbing: `POST app/api/inventory/sessio
 
 ## Log
 
+- **2026-06-23** — Released **Alpha 0.22** (tag `v0.22`): **fixed the scanner grid**. `lib/vision`
+  hardcoded `DEFAULT_GRID = 5×7`, so any inventory bigger than a small bag scanned to **0 items**
+  (caught testing Inventory Sync on a real 9×10 screenshot). BDO keeps a fixed slot pitch (~51.5px)
+  and grows the grid, so added `autoGrid(W,H)` in `segment.ts` (= `round(W/51.5) × round(H/51.5)`);
+  `gridRects`/`scanImage` now auto-detect when no spec is passed. Verified: 462×522→9×10 (28 matches,
+  conf 0.67–0.89), 258×357→5×7 (baseline unchanged). Guard: `scripts/autogrid-test.ts`. ponytail
+  ceiling noted in code: constant pitch assumes the documented capture scale — detect pitch from
+  inter-slot gaps if users capture at varying UI scale/DPI.
 - **2026-06-23** — Released **Alpha 0.21** (tag `v0.21`): two CV inventory features. (1) **Barter
   session** — parameterized `session-gather.tsx` with a `barter` prop (no clone); `layout.tsx`
   mounts a second `<SessionGather barter />` (teal FAB, `bottom-32`). Barter-only catalogue +

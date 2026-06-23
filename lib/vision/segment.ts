@@ -8,11 +8,20 @@ export type GridSpec = { cols: number; rows: number; marginX?: number; marginY?:
 
 export const DEFAULT_GRID: GridSpec = { cols: 5, rows: 7 }
 
-export async function gridRects(input: Buffer, spec: GridSpec = DEFAULT_GRID) {
+// BDO keeps a fixed slot pitch and grows the grid (more rows/cols as bag space
+// unlocks), so derive cols/rows from the capture size instead of assuming 5×7.
+// ponytail: constant pitch assumes the documented capture scale; if users start
+// capturing at varying UI scale/DPI, detect the pitch from inter-slot gaps instead.
+const SLOT_PX = 51.5
+export function autoGrid(W: number, H: number): GridSpec {
+  return { cols: Math.max(1, Math.round(W / SLOT_PX)), rows: Math.max(1, Math.round(H / SLOT_PX)) }
+}
+
+export async function gridRects(input: Buffer, spec?: GridSpec) {
   const meta = await sharp(input).metadata()
   const W = meta.width ?? 0
   const H = meta.height ?? 0
-  const { cols, rows, marginX = 0, marginY = 0, gapX = 0, gapY = 0 } = spec
+  const { cols, rows, marginX = 0, marginY = 0, gapX = 0, gapY = 0 } = spec ?? autoGrid(W, H)
   const cw = (W - 2 * marginX - (cols - 1) * gapX) / cols
   const ch = (H - 2 * marginY - (rows - 1) * gapY) / rows
   const rects: CellRect[] = []

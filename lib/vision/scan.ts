@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { gridRects, cropCell, innerStats, DEFAULT_GRID, type GridSpec } from './segment'
+import { gridRects, cropCell, innerStats, type GridSpec } from './segment'
 import {
   referenceFeatures, captureVariants, extractGrade,
   bestComposite, gradePenalty, type Features,
@@ -39,7 +39,7 @@ export async function loadReferences(items: ItemMeta[]): Promise<RefItem[]> {
   return refs
 }
 
-export async function scanImage(buf: Buffer, refs: RefItem[], grid: GridSpec = DEFAULT_GRID): Promise<ScanResult> {
+export async function scanImage(buf: Buffer, refs: RefItem[], grid?: GridSpec): Promise<ScanResult> {
   const { rects } = await gridRects(buf, grid)
   const found: ScanCandidate[] = []
   let skipped = 0
