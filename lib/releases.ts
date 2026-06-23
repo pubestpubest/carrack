@@ -12,6 +12,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.18',
+    tag:     'v0.18',
+    date:    '2026-06-23',
+    title:   'A proper anchor in your browser tab',
+    notes: [
+      'Added a favicon — a brass anchor on a navy chart-grid tile — so the tracker now has its own mark in browser tabs and bookmarks instead of the blank default.',
+    ],
+  },
+  {
     version: 'Alpha 0.17',
     tag:     'v0.17',
     date:    '2026-06-23',
