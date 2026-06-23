@@ -42,6 +42,35 @@ no longer true.
   truncation, and the Carrack→hull requirement. Extend it whenever you touch
   `lib/gap-analysis.ts`.
 
+## Planned features (requested 2026-06-23 — NOT built yet)
+
+Two CV-adjacent inventory features are queued. Both reuse the vision pipeline (`lib/vision/*`,
+`scanImage` + `loadReferences`); references are built from local catalogue icons via each item's
+`image_url`, so the now-committed barter PNGs are matchable. Existing CV plumbing:
+`POST app/api/inventory/session/scan/route.ts` (scan), `app/api/inventory/session/route.ts`
+(apply), `app/components/session-gather.tsx` (the floating quick-record UI). `runtime = 'nodejs'`
+is required wherever `sharp` runs.
+
+1. **Inventory Sync (full reconcile from a screenshot) — REPLACE-wise, NEW layout.**
+   - Upload a BDO inventory screenshot → scan reads item + qty → match against **all** catalogue
+     items (every category) → the read quantities **overwrite** `user_inventory.qty_have` (SET, not
+     ADD). Items NOT seen in the image are left untouched — do NOT zero them.
+   - Distinct from the existing gather session (which ADDS a delta). Build a **different, dedicated
+     layout**: a review screen showing the uploaded image beside the detected list (with
+     confidence), each row showing `current → scanned`, editable/deselectable before applying.
+   - Reuse the scan endpoint for detection; apply via `PUT /api/inventory/[itemId]` per item — that
+     route already SETS `qty` (= replace) and logs the audit delta. Let users correct mismatches
+     before writing; mind `ACCEPT_SCORE`/`ACCEPT_MARGIN` tuning in `lib/vision/scan.ts`.
+   - Reference screenshot for the intended source/layout: `docs/raw-inventory-sync.png`.
+
+2. **Barter Session (input / output mode) — SAME layout as the gather session, barter-only.**
+   - Clone the floating quick-record flow (`session-gather.tsx` + `/api/inventory/session*`) but
+     scope the searchable items to `category='barter'` only.
+   - Add a **mode toggle: Input vs Output** — Output just inverts the sign (negative delta = loaded
+     onto ship / bartered away; Input = acquired). Deltas clamp at 0 via the `qty_have >= 0` CHECK;
+     record the mode in the audit `reason` (e.g. `'barter in'` / `'barter out'`).
+   - Only the item filter + the +/- sign differ from today's session; keep the UI identical.
+
 ## Current state (2026-06-23)
 
 **Barter feature: items SEEDED to prod (2026-06-23); scraper + assets NOT committed; UI not built.**
