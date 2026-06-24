@@ -8,6 +8,7 @@ import GoalDeleteButton from '../goal-delete-button'
 import MaterialQtyInput from './material-qty-input'
 import ExpandableEquipmentRow from './expandable-equipment-row'
 import ShipGoalImage from '../ship-goal-image'
+import PriorityModal, { type PriorityRow } from './priority-modal'
 
 function deriveVariant(name: string): string | null {
   const n = name.toLowerCase()
@@ -88,12 +89,31 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
 
   const crowCoinItem   = allItems?.find(i => i.name === 'Crow Coin')
   const crowCoinHave   = inventory?.find(i => i.item_id === crowCoinItem?.item_id)?.qty_have ?? 0
-  // Crow coins to obtain what's still missing. Count each top-level ingredient
-  // once (its own buy price × qty left) — do NOT also add its build-material
-  // subRows, or a missing equipment piece is charged twice (buy it + craft it).
-  const crowCoinNeeded = rows
-    .filter(r => r.missing > 0 && r.crowCoinPrice != null)
-    .reduce((sum, r) => sum + (r.crowCoinPrice! * r.missing), 0)
+
+  // Crow-coin cost of what's still missing. For each top-level ingredient, take its
+  // build-material subRows when it's a crafted part (so we count the materials, not
+  // the part itself — and never both), otherwise the row itself. Every item counted
+  // exactly once; shared materials merged so each shows one combined gap.
+  const priorityMap = new Map<number, PriorityRow>()
+  for (const r of rows) {
+    const contributors = r.subRows.length > 0 ? r.subRows : [r]
+    for (const x of contributors) {
+      if (x.missing <= 0 || x.crowCoinPrice == null) continue
+      const ex = priorityMap.get(x.itemId)
+      if (ex) {
+        ex.missing += x.missing
+        ex.total   += x.crowCoinPrice * x.missing
+      } else {
+        priorityMap.set(x.itemId, {
+          itemId: x.itemId, name: x.name, nameTh: x.nameTh, grade: x.grade,
+          imageUrl: x.imageUrl, crowPrice: x.crowCoinPrice, missing: x.missing,
+          total: x.crowCoinPrice * x.missing,
+        })
+      }
+    }
+  }
+  const priorityRows   = [...priorityMap.values()].sort((a, b) => b.total - a.total)
+  const crowCoinNeeded = priorityRows.reduce((sum, r) => sum + r.total, 0)
   const crowCoinDiff   = crowCoinHave - crowCoinNeeded
 
   return (
@@ -124,6 +144,9 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
             )}
           </div>
           <div className="flex items-center gap-3">
+            {priorityRows.length > 0 && (
+              <PriorityModal rows={priorityRows} have={crowCoinHave} needed={crowCoinNeeded} />
+            )}
             <GoalDeleteButton goalId={typedGoal.id} redirectTo="/goals" label="Remove goal" />
             <GoalActions goalId={typedGoal.id} isActive={typedGoal.is_active} canCraft={canCraft && hasRecipe} />
           </div>

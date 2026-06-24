@@ -12,6 +12,16 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.28',
+    tag:     'v0.28',
+    date:    '2026-06-24',
+    title:   'Priority list + correct Crow Coin total',
+    notes: [
+      'New Priority button on a goal: opens a ranked list of the materials still needed (including those hidden inside ship parts), sorted by total Crow Coin cost (price × quantity left), so you can see the biggest gaps to focus on first.',
+      'Fixed the Crow Coin “needed” total: crafted ship parts now count the materials to build them (it was missing those), and nothing is counted twice — so the figure finally matches what you actually have left to gather.',
+    ],
+  },
+  {
     version: 'Alpha 0.27',
     tag:     'v0.27',
     date:    '2026-06-24',
