@@ -13,6 +13,14 @@ export type BarterRow = {
 }
 export type Threshold = { tier: number; crit: number; warn: number }
 
+type SortKey = 'id-hl' | 'id-lh' | 'qty-hl' | 'qty-lh'
+const SORT_LABEL: Record<SortKey, string> = {
+  'id-hl': 'In-game order (ID ↓)',
+  'id-lh': 'ID: low → high',
+  'qty-hl': 'Qty: high → low',
+  'qty-lh': 'Qty: low → high',
+}
+
 const DEFAULT_CRIT = 10
 const DEFAULT_WARN = 20
 
@@ -41,6 +49,7 @@ export default function BarterHold({ rows, thresholds }: { rows: BarterRow[]; th
   const [tierSel,   setTierSel]   = useState<number | null>(null)
   const [heldOnly,  setHeldOnly]  = useState(false)
   const [showCfg,   setShowCfg]   = useState(false)
+  const [sort,      setSort]      = useState<SortKey>('id-hl')
 
   const [editing, setEditing] = useState<Record<number, string>>({})
   const [saved,   setSaved]   = useState<Record<number, number>>({})
@@ -94,10 +103,17 @@ export default function BarterHold({ rows, thresholds }: { rows: BarterRow[]; th
   const grouped = useMemo(() => {
     const m = new Map<number, BarterRow[]>()
     for (const r of filtered) (m.get(r.tier) ?? m.set(r.tier, []).get(r.tier)!).push(r)
-    // sort each shelf by item_id high → low, matching in-game order
-    for (const list of m.values()) list.sort((a, b) => b.item_id - a.item_id)
+    // sort each shelf by the chosen key (qty ties break to in-game ID order)
+    for (const list of m.values()) list.sort((a, b) => {
+      switch (sort) {
+        case 'id-lh':  return a.item_id - b.item_id
+        case 'qty-hl': return actual(b) - actual(a) || b.item_id - a.item_id
+        case 'qty-lh': return actual(a) - actual(b) || b.item_id - a.item_id
+        default:       return b.item_id - a.item_id // id-hl — in-game order
+      }
+    })
     return m
-  }, [filtered, saved]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filtered, saved, sort]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const goodsHeld  = rows.filter(r => actual(r) > 0).length
   const totalUnits = rows.reduce((s, r) => s + actual(r), 0)
@@ -157,6 +173,17 @@ export default function BarterHold({ rows, thresholds }: { rows: BarterRow[]; th
             )
           })}
         </div>
+        <select
+          value={sort}
+          onChange={e => setSort(e.target.value as SortKey)}
+          aria-label="Sort goods within each tier"
+          className="rounded-xl border bg-[rgba(17,29,48,0.6)] px-3 py-2.5 font-display text-xs uppercase tracking-wider text-[#9fb0c4] outline-none transition-colors focus:border-[var(--brass-dim)]"
+          style={{ borderColor: 'rgba(200,168,75,0.18)' }}
+        >
+          {(Object.keys(SORT_LABEL) as SortKey[]).map(k => (
+            <option key={k} value={k} className="bg-[#0b1220] tracking-normal">{SORT_LABEL[k]}</option>
+          ))}
+        </select>
         <button
           onClick={() => setHeldOnly(v => !v)}
           className="rounded-xl border px-3.5 py-2.5 font-display text-xs uppercase tracking-widest transition-colors"
