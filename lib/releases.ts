@@ -12,6 +12,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.27',
+    tag:     'v0.27',
+    date:    '2026-06-24',
+    title:   'Accurate Crow Coin estimate on goals',
+    notes: [
+      'Fixed the Crow Coin “needed” total on a goal: a still-missing ship part was being charged twice — once to buy it and again for the materials to craft it — inflating the number. It now counts each still-needed item once, so the total reflects what you actually have left to obtain.',
+    ],
+  },
+  {
     version: 'Alpha 0.26',
     tag:     'v0.26',
     date:    '2026-06-24',

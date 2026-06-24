@@ -88,8 +88,10 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
 
   const crowCoinItem   = allItems?.find(i => i.name === 'Crow Coin')
   const crowCoinHave   = inventory?.find(i => i.item_id === crowCoinItem?.item_id)?.qty_have ?? 0
+  // Crow coins to obtain what's still missing. Count each top-level ingredient
+  // once (its own buy price × qty left) — do NOT also add its build-material
+  // subRows, or a missing equipment piece is charged twice (buy it + craft it).
   const crowCoinNeeded = rows
-    .flatMap(r => [r, ...r.subRows])
     .filter(r => r.missing > 0 && r.crowCoinPrice != null)
     .reduce((sum, r) => sum + (r.crowCoinPrice! * r.missing), 0)
   const crowCoinDiff   = crowCoinHave - crowCoinNeeded
