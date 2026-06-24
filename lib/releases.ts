@@ -12,6 +12,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'Alpha 0.29',
+    tag:     'v0.29',
+    date:    '2026-06-24',
+    title:   'Save confirmation with Crow Coin value',
+    notes: [
+      'After saving a gathering (or barter) session, a toast now confirms how many pieces were recorded and what they’re worth in Crow Coins — a quick sense of the haul’s value.',
+    ],
+  },
+  {
     version: 'Alpha 0.28',
     tag:     'v0.28',
     date:    '2026-06-24',

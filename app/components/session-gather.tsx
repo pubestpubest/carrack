@@ -13,6 +13,7 @@ type Item = {
   category:  string
   tier:      number
   image_url: string | null
+  crow_coin_price: number | null
 }
 
 // One row in the active gathering session: the item + how much was gathered.
@@ -44,6 +45,8 @@ export default function SessionGather({ barter = false }: { barter?: boolean }) 
   const [saving,   setSaving]   = useState(false)
   const [error,    setError]    = useState<string | null>(null)
   const [authed,   setAuthed]   = useState(false)
+  // Post-save confirmation toast: how much was recorded + its Crow Coin value.
+  const [toast,    setToast]    = useState<{ qty: number; coins: number; out: boolean } | null>(null)
   const [scanning, setScanning] = useState(false)
   const [scanNote, setScanNote] = useState<string | null>(null)
   const [scanPreview, setScanPreview] = useState<string | null>(null) // object URL, session-only
@@ -77,7 +80,7 @@ export default function SessionGather({ barter = false }: { barter?: boolean }) 
   const loadData = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
-    const itemsQ = supabase.from('items').select('item_id, name, name_th, grade, category, tier, image_url').order('tier').order('name')
+    const itemsQ = supabase.from('items').select('item_id, name, name_th, grade, category, tier, image_url, crow_coin_price').order('tier').order('name')
     const [{ data: its }, { data: inv }] = await Promise.all([
       barter ? itemsQ.eq('category', 'barter') : itemsQ,
       supabase.from('user_inventory').select('item_id, qty_have'),
@@ -108,6 +111,13 @@ export default function SessionGather({ barter = false }: { barter?: boolean }) 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
+
+  // Auto-dismiss the save toast.
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 4500)
+    return () => clearTimeout(t)
+  }, [toast])
 
   const lineIds = useMemo(() => new Set(lines.map(l => l.item.item_id)), [lines])
 
@@ -202,8 +212,12 @@ export default function SessionGather({ barter = false }: { barter?: boolean }) 
   const canSave     = lines.some(l => l.gained > 0) && !saving
 
   async function save() {
-    const payload = lines.filter(l => l.gained > 0).map(l => ({ item_id: l.item.item_id, delta: sign * l.gained }))
+    const saved   = lines.filter(l => l.gained > 0)
+    const payload = saved.map(l => ({ item_id: l.item.item_id, delta: sign * l.gained }))
     if (payload.length === 0) return
+    // Totals for the post-save toast: pieces recorded + their Crow Coin value.
+    const savedQty   = saved.reduce((s, l) => s + l.gained, 0)
+    const savedCoins = saved.reduce((s, l) => s + (l.item.crow_coin_price ?? 0) * l.gained, 0)
     const reason = barter ? (out ? 'barter out' : 'barter in') : 'gathering session'
     setSaving(true)
     setError(null)
@@ -225,6 +239,7 @@ export default function SessionGather({ barter = false }: { barter?: boolean }) 
       })
       setLines([])
       setOpen(false)
+      setToast({ qty: savedQty, coins: savedCoins, out: sign < 0 })
       router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Save failed')
@@ -550,6 +565,46 @@ export default function SessionGather({ barter = false }: { barter?: boolean }) 
               </button>
             </div>
           )}
+        </div>,
+        document.body,
+      )}
+
+      {toast && createPortal(
+        <div className="animate-hero-rise fixed bottom-6 left-1/2 z-[10050] -translate-x-1/2 px-4">
+          <div
+            className="flex items-center gap-3 rounded-2xl border px-5 py-3.5"
+            style={{
+              background: 'linear-gradient(135deg, var(--ink-surface) 0%, rgba(8,13,22,0.97) 100%)',
+              borderColor: 'rgba(200,168,75,0.35)',
+              boxShadow: '0 14px 44px rgba(0,0,0,0.55), inset 0 1px 0 rgba(200,168,75,0.1)',
+            }}
+          >
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base font-bold"
+              style={toast.out
+                ? { background: 'rgba(251,191,36,0.14)', color: '#fbbf24', boxShadow: 'inset 0 0 0 1px rgba(251,191,36,0.4)' }
+                : { background: 'rgba(74,222,128,0.14)', color: '#4ade80', boxShadow: 'inset 0 0 0 1px rgba(74,222,128,0.4)' }}
+            >
+              ✓
+            </span>
+            <div className="min-w-0">
+              <p className="font-display text-sm tracking-wide text-brass-light">
+                บันทึกแล้ว · <span className="font-thai">{toast.out ? 'นำออก' : 'เพิ่ม'} {toast.qty.toLocaleString()} ชิ้น</span>
+              </p>
+              <p className="mt-0.5 text-xs font-thai tabular-nums text-amber-500/80">
+                {toast.coins > 0
+                  ? `🪙 เทียบเท่า ~${toast.coins.toLocaleString()} อีกาคอยน์`
+                  : 'ไม่มีมูลค่าอีกาคอยน์'}
+              </p>
+            </div>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-1 shrink-0 rounded-md p-1 text-gray-600 hover:text-gray-300"
+              aria-label="ปิด"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
         </div>,
         document.body,
       )}
